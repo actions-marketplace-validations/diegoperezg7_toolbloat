@@ -59,3 +59,8 @@ def test_budget_stops_with_partial_results(tools, intents):
 def test_total_calls(tools, intents):
     llm = FakeLLM(ModelSpec("ollama", "fake"))
     assert evaluate.total_calls([llm, llm], tools, intents) == 12
+
+
+def test_round_robin_covers_servers_first(intents):
+    order = [i.server for i in evaluate._round_robin(intents)]
+    assert order[:2] in (["math", "text"], ["text", "math"])

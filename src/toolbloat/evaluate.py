@@ -121,7 +121,7 @@ def run(
         server_defs.setdefault(t.server, []).append(openai_tool(t))
         server_tokens[t.server] = server_tokens.get(t.server, 0) + t.tokens
     h = stack_hash(tools)
-    todo = [i for i in intents if not i.skip and i.tool in by_key]
+    todo = _round_robin([i for i in intents if not i.skip and i.tool in by_key])
 
     calls: list[Call] = []
     lock = threading.Lock()
@@ -222,6 +222,19 @@ def run(
         stop["reason"] = "interrupted by the user (Ctrl-C); partial results kept"
     reasons = [r for r in [stop["reason"], *problems] if r]
     return calls, "; ".join(reasons) or None
+
+
+def _round_robin(items: list[Intent]) -> list[Intent]:
+    """Interleave servers so a run stopped early (budget, Ctrl-C) still covers every server."""
+    queues: dict[str, list[Intent]] = {}
+    for i in items:
+        queues.setdefault(i.server, []).append(i)
+    out: list[Intent] = []
+    while any(queues.values()):
+        for q in queues.values():
+            if q:
+                out.append(q.pop(0))
+    return out
 
 
 def total_calls(llms: list[LLM], tools: list[ToolDef], intents: list[Intent]) -> int:
