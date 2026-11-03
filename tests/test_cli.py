@@ -60,7 +60,7 @@ def test_cloud_provider_needs_confirmation(monkeypatch, tmp_path):
         ],
     )
     assert r.exit_code == 1, r.output
-    assert "tiny (2 tools)" in r.output and "mistral" in r.output and "--yes" in r.output
+    assert "tiny (2 tools) from --server" in r.output and "mistral" in r.output and "--yes" in r.output
     assert sent == [] and not (tmp_path / "i.yaml").exists()
 
 
@@ -81,3 +81,17 @@ def test_intents_cloud_needs_confirmation(monkeypatch, tmp_path):
         ],
     )
     assert r.exit_code == 1 and "--yes" in r.output and sent == []
+
+
+def test_confirmation_names_the_config_file(monkeypatch, tmp_path):
+    import json
+
+    cfg = tmp_path / ".mcp.json"
+    cfg.write_text(json.dumps({"mcpServers": {"tiny": {"command": sys.executable, "args": [TINY]}}}))
+    monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
+    monkeypatch.setattr("toolbloat.llm.LLM.chat", lambda self, *a, **k: (_ for _ in ()).throw(AssertionError))
+    r = runner.invoke(
+        app, ["intents", "-m", "mistral:ministral-8b-latest", "-c", str(cfg), "--intents", str(tmp_path / "i.yaml")]
+    )
+    assert r.exit_code == 1
+    assert "tiny (2 tools) from" in r.output and ".mcp.json" in r.output.replace("\n", "")

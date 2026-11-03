@@ -33,6 +33,7 @@ class ServerResult:
     tools: list[ToolDef] = field(default_factory=list)
     error: str | None = None
     server_version: str | None = None
+    source: str = "--server"  # config file it came from; shown locally, never written to reports
 
     @property
     def tokens(self) -> int:
@@ -43,7 +44,7 @@ async def _list_one(spec: ServerSpec, timeout: float) -> ServerResult:
     from mcp import ClientSession
     from mcp.client.stdio import StdioServerParameters, stdio_client
 
-    result = ServerResult(name=spec.name, command=spec.display())
+    result = ServerResult(name=spec.name, command=spec.display(), source=spec.source)
     if shutil.which(spec.command) is None and not os.path.isfile(spec.command):
         result.error = f"command not found: {spec.command}"
         return result

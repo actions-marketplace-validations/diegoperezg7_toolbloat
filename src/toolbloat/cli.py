@@ -116,7 +116,7 @@ def _confirm_cloud(specs, servers, yes: bool) -> None:
         f" {len(sent)} server(s) and the test requests will be sent to [bold]{', '.join(cloud)}[/]:"
     )
     for r in sent:
-        console.print(f"  - {r.name} ({len(r.tools)} tools): {r.command}")
+        console.print(f"  - {r.name} ({len(r.tools)} tools) from {r.source}: {r.command}")
     console.print("[dim]  Nothing else leaves this machine: no env values, no files, and no tool is ever executed.[/]")
     if yes:
         return
