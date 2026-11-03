@@ -109,6 +109,7 @@ def run(
     *,
     cache: Cache,
     on_call: Callable[[Call], None] | None = None,
+    cached_only: bool = False,
 ) -> tuple[list[Call], str | None]:
     """Returns the calls and, if the run stopped early, the reason."""
     by_name = {function_name(t.server, t.name): t for t in tools}
@@ -128,10 +129,10 @@ def run(
     stop: dict[str, str | None] = {"reason": None}
     problems: list[str] = []
 
-    def one(llm: LLM, intent: Intent, condition: str) -> Call:
+    def one(llm: LLM, intent: Intent, condition: str) -> Call | None:
         key = _key(llm.spec.id, intent, condition, h)
         cached = cache.get(key)
-        if cached:
+        if cached or cached_only:
             return cached
         defs = server_defs[intent.server] if condition == "solo" else all_defs
         est = (server_tokens[intent.server] if condition == "solo" else all_tokens) + 200
@@ -194,6 +195,8 @@ def run(
                         if stop["reason"]:
                             return
                         c = one(llm, intent, condition)
+                        if c is None:
+                            continue
                         with lock:
                             calls.append(c)
                         if on_call:

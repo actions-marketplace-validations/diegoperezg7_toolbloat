@@ -64,3 +64,9 @@ def test_total_calls(tools, intents):
 def test_round_robin_covers_servers_first(intents):
     order = [i.server for i in evaluate._round_robin(intents)]
     assert order[:2] in (["math", "text"], ["text", "math"])
+
+
+def test_cached_only_makes_no_calls(tools, intents):
+    llm = FakeLLM(ModelSpec("ollama", "fake"))
+    calls, _ = evaluate.run([llm], tools, intents, cache=evaluate.Cache(None), cached_only=True)
+    assert calls == [] and llm.calls == []

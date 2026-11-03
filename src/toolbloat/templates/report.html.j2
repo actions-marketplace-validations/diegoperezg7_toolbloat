@@ -80,7 +80,8 @@ td.num { white-space: nowrap; }
 .chip { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
 .down { color: var(--err); } .up { color: var(--ok); } .flat { color: var(--muted); }
 .dumb { position: relative; height: 18px; min-width: 100px; }
-.acc th, .acc td { padding: 8px 7px; }
+.acc th, .acc td { padding: 8px 6px; }
+.acc th { white-space: normal; vertical-align: bottom; }
 .acc td.model { font-size: 13px; }
 .acc td.model small { display: block; color: var(--muted); font-size: 11px; }
 .dumb .line { position: absolute; top: 8px; height: 2px; background: var(--border); }
@@ -193,7 +194,7 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
   <div class="table-wrap"><table class="acc">
     <thead><tr>
       <th data-i18n="model">Model</th><th class="r" data-i18n="alone">Alone</th><th class="r" data-i18n="stacked">Stacked</th><th style="min-width:110px" aria-label="0-100%"></th>
-      <th class="r" data-i18n="change">Change</th><th class="r" data-i18n="broken">Broken by stacking</th><th class="r" data-i18n="rightServer">Right server</th>
+      <th class="r" data-i18n="change">Change</th><th class="r" data-i18n="broken">Broken</th><th class="r" data-i18n="rightServer">Right server</th>
       <th class="r" data-i18n="validArgs">Valid args</th><th class="r" data-i18n="noCall">No call</th><th class="r" data-i18n="billed">Billed tokens</th><th class="r" data-i18n="perMonth">$ / month</th>
     </tr></thead>
     <tbody>
@@ -217,7 +218,7 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
     {% endfor %}
     </tbody>
   </table></div>
-  <p class="note"><span data-i18n="accNote1">"Broken by stacking": requests the model answered correctly alone and wrongly with the whole stack. "Valid args": correct calls whose arguments validate against the tool's JSON Schema. "Billed tokens": average prompt tokens the provider reported for a stacked call. "$ / month": approximate definition tokens × list input price ×</span> {{ m.turns_per_day }} <span data-i18n="accNote2">turns/day × 30 days, without prompt caching.</span></p>
+  <p class="note"><span data-i18n="accNote1">"Broken": requests the model answered correctly alone and wrongly with the whole stack. "Valid args": correct calls whose arguments validate against the tool's JSON Schema. "Billed tokens": average prompt tokens the provider reported for a stacked call. "$ / month": approximate definition tokens × list input price ×</span> {{ m.turns_per_day }} <span data-i18n="accNote2">turns/day × 30 days, without prompt caching.</span></p>
 </section>
 
 <section class="card">
@@ -303,8 +304,8 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
     perServer: "Tokens por servidor", perServerSub: "Cada tool se cuenta como nombre, descripción y JSON Schema con tiktoken o200k. Cada proveedor usa su propio tokenizer, así que son aproximados.",
     toolsShort: "tools", heaviest: "Las tools que más pesan", heaviestSub: "Las diez definiciones que más tokens cuestan.", tool: "Tool", tokens: "Tokens",
     accuracy: "Acierto al elegir tool: sola vs. con toda la pila", accuracySub: "Porcentaje de peticiones en las que el modelo llamó a la tool esperada. «Sola» carga solo el servidor de esa tool; «con la pila» carga los", servers: "servidores", requests: "peticiones",
-    alone: "Sola", stacked: "Con la pila", model: "Modelo", change: "Cambio", broken: "Rotas al juntar", rightServer: "Servidor correcto", validArgs: "Args válidos", noCall: "Sin llamada", billed: "Tokens facturados", perMonth: "$ / mes", local: "local",
-    accNote1: "«Rotas al juntar»: peticiones que el modelo acertó con su servidor solo y falló con toda la pila. «Args válidos»: llamadas correctas cuyos argumentos validan contra el JSON Schema de la tool. «Tokens facturados»: media de tokens de prompt que el proveedor reportó en una llamada con la pila. «$ / mes»: tokens de definiciones aprox. × precio de entrada de lista ×", accNote2: "turnos/día × 30 días, sin caché de prompt.",
+    alone: "Sola", stacked: "Con la pila", model: "Modelo", change: "Cambio", broken: "Rotas", rightServer: "Servidor correcto", validArgs: "Args válidos", noCall: "Sin llamada", billed: "Tokens facturados", perMonth: "$ / mes", local: "local",
+    accNote1: "«Rotas»: peticiones que el modelo acertó con su servidor solo y falló con toda la pila. «Args válidos»: llamadas correctas cuyos argumentos validan contra el JSON Schema de la tool. «Tokens facturados»: media de tokens de prompt que el proveedor reportó en una llamada con la pila. «$ / mes»: tokens de definiciones aprox. × precio de entrada de lista ×", accNote2: "turnos/día × 30 días, sin caché de prompt.",
     confusion: "Confusión entre servidores (con la pila)", confusionSub: "Filas: el servidor de la tool esperada. Columnas: el servidor de la tool que el modelo llamó. Las celdas fuera de la diagonal son elecciones del servidor equivocado.",
     show: "Mostrar", allModels: "Todos los modelos", expectedChosen: "esperado ↓ · elegido →", noCallCol: "sin llamada", unknownCol: "desconocida",
     wrong: "Errores más comunes (con la pila)", wrongSub: "Tool esperada y la que llamó el modelo en su lugar, sumando todos los modelos.", expected: "Esperada", chosen: "Elegida", otherServer: "otro servidor", noWrong: "Ningún error.",

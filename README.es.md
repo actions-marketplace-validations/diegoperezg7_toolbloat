@@ -99,6 +99,7 @@ Tool selection accuracy (alone vs. whole stack)
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
 ┃ model                        ┃ alone ┃ stacked ┃  change ┃ broken ┃ args ok ┃ $/month ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│ ollama:qwen3:4b-16k (15/43)  │   80% │     87% │  +7 pts │      0 │    100% │   local │
 │ mistral:ministral-8b-latest  │   86% │     72% │ -14 pts │      6 │    100% │   $2.73 │
 │ mistral:ministral-14b-latest │   91% │     86% │  -5 pts │      2 │    100% │   $3.64 │
 └──────────────────────────────┴───────┴─────────┴─────────┴────────┴─────────┴─────────┘
@@ -108,18 +109,17 @@ Most common wrong picks with the whole stack
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
 ┃ expected                             ┃ model chose                         ┃ times ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ memory/create_relations              │ memory/create_entities              │     2 │
 │ filesystem/write_file                │ filesystem/create_directory         │     2 │
+│ memory/delete_observations           │ memory/search_nodes                 │     2 │
 │ filesystem/edit_file                 │ filesystem/read_text_file           │     2 │
 │ filesystem/list_directory_with_sizes │ filesystem/list_allowed_directories │     2 │
-│ memory/create_relations              │ memory/create_entities              │     2 │
-│ memory/delete_observations           │ memory/search_nodes                 │     2 │
+│ filesystem/edit_file                 │ (no call)                           │     1 │
+│ filesystem/create_directory          │ (no call)                           │     1 │
 │ filesystem/read_file                 │ filesystem/list_allowed_directories │     1 │
-│ filesystem/read_text_file            │ filesystem/list_allowed_directories │     1 │
-│ filesystem/read_media_file           │ filesystem/search_files             │     1 │
 └──────────────────────────────────────┴─────────────────────────────────────┴───────┘
-5 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
-filesystem/list_directory_with_sizes, memory/delete_observations, filesystem/write_file. Removing 
-them saves ~690 tokens per turn (~2.1M/month).
+3 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
+memory/delete_observations. Removing them saves ~448 tokens per turn (~1.3M/month).
 API cost of the calls in this report: $0.1447
 ```
 <!-- demo:end -->
@@ -201,7 +201,9 @@ servidores MCP de tu config, que es código de terceros que ya ejecutas con tu a
 credenciales: `server-filesystem`, `server-memory`, `server-everything`, `server-sequential-thinking`
 (npm) y `mcp-server-time`, `mcp-server-fetch` (PyPI). Se publican con licencia MIT, y el proyecto está
 pasando las contribuciones nuevas a Apache-2.0 ([LICENSE](https://github.com/modelcontextprotocol/servers/blob/main/LICENSE)).
-toolbloat no incluye su código, solo las definiciones de tools que devolvieron. La config está en
+toolbloat no incluye su código, solo las definiciones de tools que devolvieron.
+
+Modelos de la grabación: `mistral:ministral-8b-latest` y `mistral:ministral-14b-latest` respondieron las 43 peticiones en las dos condiciones (172 llamadas, 0,14 USD en total a precio de lista). `ollama:qwen3:4b-16k` corrió en el mismo Apple M4 mientras otros trabajos compartían la GPU y respondió 15 de las 43 peticiones en ambas condiciones antes de congelar la grabación; su fila compara solo esas 15. `mistral-small-latest` y `mistral-medium-latest` dieron límite de peticiones (HTTP 429) durante toda la sesión y no están en la grabación. Las peticiones las escribió `ministral-8b-latest` y se revisaron a mano. La config está en
 [`examples/reference-stack.mcp.json`](examples/reference-stack.mcp.json) y las intenciones revisadas en
 [`examples/reference-stack.intents.yaml`](examples/reference-stack.intents.yaml).
 

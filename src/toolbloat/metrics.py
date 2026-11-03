@@ -39,8 +39,21 @@ def compute(results: dict) -> dict:
     prices = {m["id"]: (m.get("price_in", 0.0), m.get("price_out", 0.0)) for m in results["models"]}
     for m in results["models"]:
         mid = m["id"]
-        cs = by_model.get(mid, [])
-        row = {"id": mid, "price_in": prices[mid][0], "calls": len(cs), "cost": sum(c["cost"] for c in cs)}
+        cs_all = by_model.get(mid, [])
+        # Compare like with like: keep only requests answered in both conditions.
+        answered = defaultdict(set)
+        for c in cs_all:
+            if not c.get("error"):
+                answered[c["intent_id"]].add(c["condition"])
+        paired = {i for i, conds in answered.items() if conds >= {"solo", "stack"}}
+        cs = [c for c in cs_all if c["intent_id"] in paired or c.get("error")]
+        row = {
+            "id": mid,
+            "price_in": prices[mid][0],
+            "calls": len(cs_all),
+            "paired": len(paired),
+            "cost": sum(c["cost"] for c in cs_all),
+        }
         for cond in ("solo", "stack"):
             cc = [c for c in cs if c["condition"] == cond and not c.get("error")]
             row[f"{cond}_n"] = len(cc)

@@ -97,6 +97,7 @@ Tool selection accuracy (alone vs. whole stack)
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
 ┃ model                        ┃ alone ┃ stacked ┃  change ┃ broken ┃ args ok ┃ $/month ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│ ollama:qwen3:4b-16k (15/43)  │   80% │     87% │  +7 pts │      0 │    100% │   local │
 │ mistral:ministral-8b-latest  │   86% │     72% │ -14 pts │      6 │    100% │   $2.73 │
 │ mistral:ministral-14b-latest │   91% │     86% │  -5 pts │      2 │    100% │   $3.64 │
 └──────────────────────────────┴───────┴─────────┴─────────┴────────┴─────────┴─────────┘
@@ -106,18 +107,17 @@ Most common wrong picks with the whole stack
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
 ┃ expected                             ┃ model chose                         ┃ times ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ memory/create_relations              │ memory/create_entities              │     2 │
 │ filesystem/write_file                │ filesystem/create_directory         │     2 │
+│ memory/delete_observations           │ memory/search_nodes                 │     2 │
 │ filesystem/edit_file                 │ filesystem/read_text_file           │     2 │
 │ filesystem/list_directory_with_sizes │ filesystem/list_allowed_directories │     2 │
-│ memory/create_relations              │ memory/create_entities              │     2 │
-│ memory/delete_observations           │ memory/search_nodes                 │     2 │
+│ filesystem/edit_file                 │ (no call)                           │     1 │
+│ filesystem/create_directory          │ (no call)                           │     1 │
 │ filesystem/read_file                 │ filesystem/list_allowed_directories │     1 │
-│ filesystem/read_text_file            │ filesystem/list_allowed_directories │     1 │
-│ filesystem/read_media_file           │ filesystem/search_files             │     1 │
 └──────────────────────────────────────┴─────────────────────────────────────┴───────┘
-5 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
-filesystem/list_directory_with_sizes, memory/delete_observations, filesystem/write_file. Removing 
-them saves ~690 tokens per turn (~2.1M/month).
+3 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
+memory/delete_observations. Removing them saves ~448 tokens per turn (~1.3M/month).
 API cost of the calls in this report: $0.1447
 ```
 <!-- demo:end -->
@@ -198,7 +198,9 @@ servers in your config, which is third-party code you already run with your agen
 credentials: `server-filesystem`, `server-memory`, `server-everything`, `server-sequential-thinking`
 (npm) and `mcp-server-time`, `mcp-server-fetch` (PyPI). They are published under MIT, with the
 project moving new contributions to Apache-2.0 ([LICENSE](https://github.com/modelcontextprotocol/servers/blob/main/LICENSE)).
-toolbloat does not bundle their code, only the tool definitions they returned. The config is in
+toolbloat does not bundle their code, only the tool definitions they returned.
+
+Models in the recording: `mistral:ministral-8b-latest` and `mistral:ministral-14b-latest` answered all 43 requests in both conditions (172 calls, 0.14 USD in total by list price). `ollama:qwen3:4b-16k` ran on the same Apple M4 while other jobs shared the GPU and answered 15 of the 43 requests in both conditions before the recording was frozen; its row compares only those 15. `mistral-small-latest` and `mistral-medium-latest` were rate limited (HTTP 429) for the whole session and are not in the recording. Requests were written by `ministral-8b-latest` and reviewed by hand. The config is in
 [`examples/reference-stack.mcp.json`](examples/reference-stack.mcp.json) and the reviewed intents in
 [`examples/reference-stack.intents.yaml`](examples/reference-stack.intents.yaml).
 

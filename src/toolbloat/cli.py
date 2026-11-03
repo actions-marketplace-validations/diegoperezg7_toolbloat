@@ -187,6 +187,9 @@ def run(
         typer.Option(help="Price for a model without a built-in one: provider:model=IN,OUT (USD per 1M tokens)."),
     ] = None,
     timeout: Annotated[float, typer.Option(help="Seconds to wait for each server.")] = 90,
+    cached_only: Annotated[
+        bool, typer.Option("--cached-only", help="Make no model calls: build the report from cached answers only.")
+    ] = False,
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Do not ask before sending data to a cloud API.")] = False,
     open_report: Annotated[bool, typer.Option("--open/--no-open", help="Open the HTML report.")] = False,
 ) -> None:
@@ -223,8 +226,9 @@ def run(
 
         budget = Budget(max_cost=max_cost)
         llms = [LLM(s, budget) for s in specs]
-        for llm in llms:
-            llm.preflight()
+        if not cached_only:
+            for llm in llms:
+                llm.preflight()
         results_servers = _discover(config, server, timeout)
         tools = [t for r in results_servers for t in r.tools]
         if not tools:
@@ -256,7 +260,7 @@ def run(
                     f"Asking models which tool they would call ({done['n']}/{total}) · spent ${budget.total:.4f}"
                 )
 
-            calls, stopped = evaluate.run(llms, tools, items, cache=cache, on_call=tick)
+            calls, stopped = evaluate.run(llms, tools, items, cache=cache, on_call=tick, cached_only=cached_only)
         if stopped and not calls:
             raise ToolbloatError(stopped)
     except ToolbloatError as e:
