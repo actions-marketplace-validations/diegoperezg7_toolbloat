@@ -99,7 +99,6 @@ Tool selection accuracy (alone vs. whole stack)
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
 ┃ model                        ┃ alone ┃ stacked ┃  change ┃ broken ┃ args ok ┃ $/month ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
-│ ollama:qwen3:4b-16k (15/43)  │   80% │     87% │  +7 pts │      0 │    100% │   local │
 │ mistral:ministral-8b-latest  │   86% │     72% │ -14 pts │      6 │    100% │   $2.73 │
 │ mistral:ministral-14b-latest │   91% │     86% │  -5 pts │      2 │    100% │   $3.64 │
 └──────────────────────────────┴───────┴─────────┴─────────┴────────┴─────────┴─────────┘
@@ -114,12 +113,13 @@ Most common wrong picks with the whole stack
 │ memory/delete_observations           │ memory/search_nodes                 │     2 │
 │ filesystem/edit_file                 │ filesystem/read_text_file           │     2 │
 │ filesystem/list_directory_with_sizes │ filesystem/list_allowed_directories │     2 │
-│ filesystem/edit_file                 │ (no call)                           │     1 │
-│ filesystem/create_directory          │ (no call)                           │     1 │
 │ filesystem/read_file                 │ filesystem/list_allowed_directories │     1 │
+│ filesystem/read_text_file            │ filesystem/list_allowed_directories │     1 │
+│ filesystem/read_media_file           │ filesystem/search_files             │     1 │
 └──────────────────────────────────────┴─────────────────────────────────────┴───────┘
-3 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
-memory/delete_observations. Removing them saves ~448 tokens per turn (~1.3M/month).
+5 tool(s) were never chosen with the whole stack: filesystem/edit_file, memory/create_relations, 
+filesystem/list_directory_with_sizes, memory/delete_observations, filesystem/write_file. Removing 
+them saves ~690 tokens per turn (~2.1M/month).
 API cost of the calls in this report: $0.1447
 ```
 <!-- demo:end -->
@@ -183,11 +183,15 @@ Las claves solo se leen de variables de entorno: `MISTRAL_API_KEY`, `OPENROUTER_
 **Ventana de contexto de Ollama.** Ollama carga los modelos con una ventana pequeña por defecto
 (4.096 tokens para `qwen3:4b` aquí). Una pila de varios servidores ocupa más y se corta sin avisar;
 toolbloat avisa cuando un modelo factura menos tokens de prompt que las definiciones. Crea una
-variante con más ventana una vez y úsala:
+variante con más ventana una vez (`num_ctx` 16384) y úsala:
 
 ```bash
 printf 'FROM qwen3:4b\nPARAMETER num_ctx 16384\n' > Modelfile && ollama create qwen3:4b-16k -f Modelfile
 ```
+
+Probado con `ollama:qwen3:4b-16k` en una ejecución real corta (32 llamadas sobre la pila de referencia; el prompt más
+largo fue de 5.193 tokens, muy por debajo de la ventana de 16.384). No está en la demo grabada: un modelo local de 4B
+con thinking tardaba varios minutos por llamada en un portátil de 16 GB compartido.
 
 **Privacidad.** Con un proveedor en la nube, las definiciones de tus tools y las peticiones de prueba
 se le envían. Con Ollama nada sale de tu máquina. No hay telemetría. Ejecutar toolbloat arranca los
@@ -203,7 +207,7 @@ credenciales: `server-filesystem`, `server-memory`, `server-everything`, `server
 pasando las contribuciones nuevas a Apache-2.0 ([LICENSE](https://github.com/modelcontextprotocol/servers/blob/main/LICENSE)).
 toolbloat no incluye su código, solo las definiciones de tools que devolvieron.
 
-Modelos de la grabación: `mistral:ministral-8b-latest` y `mistral:ministral-14b-latest` respondieron las 43 peticiones en las dos condiciones (172 llamadas, 0,14 USD en total a precio de lista). `ollama:qwen3:4b-16k` corrió en el mismo Apple M4 mientras otros trabajos compartían la GPU y respondió 15 de las 43 peticiones en ambas condiciones antes de congelar la grabación; su fila compara solo esas 15. `mistral-small-latest` y `mistral-medium-latest` dieron límite de peticiones (HTTP 429) durante toda la sesión y no están en la grabación. Las peticiones las escribió `ministral-8b-latest` y se revisaron a mano. La config está en
+Modelos de la grabación: `mistral:ministral-8b-latest` y `mistral:ministral-14b-latest`, cada uno con las 43 peticiones en las dos condiciones (172 llamadas, 0,14 USD en total a precio de lista). Las peticiones las escribió `ministral-8b-latest` y se revisaron a mano. Los avisos de terceros de las definiciones de tools incluidas están en [NOTICE](NOTICE). La config está en
 [`examples/reference-stack.mcp.json`](examples/reference-stack.mcp.json) y las intenciones revisadas en
 [`examples/reference-stack.intents.yaml`](examples/reference-stack.intents.yaml).
 
