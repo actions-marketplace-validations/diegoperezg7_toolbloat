@@ -140,6 +140,24 @@ class LLM:
             timeout = 1200.0 if spec.provider == "ollama" else 180.0
         self.client = OpenAI(base_url=base_url, api_key=api_key, timeout=timeout, max_retries=0)
 
+    def preflight(self) -> None:
+        """For Ollama, fail fast if the server is down or the model is not pulled (free, no generation)."""
+        if self.spec.provider != "ollama":
+            return
+        import openai
+
+        try:
+            names = {m.id for m in self.client.models.list()}
+        except openai.APIConnectionError as e:
+            raise ProviderUnreachable(
+                f"Cannot reach Ollama at {self.base_url}. Start it with `ollama serve` or set OLLAMA_HOST."
+            ) from e
+        except openai.APIError:
+            return  # an older Ollama without /v1/models: let the first call tell
+        wanted = self.spec.model
+        if wanted not in names and f"{wanted}:latest" not in names:
+            raise ModelNotFound(f"Model '{wanted}' is not available in Ollama. Run `ollama pull {wanted}` first.")
+
     def estimate_cost(self, prompt_tokens: int, max_out: int) -> float:
         pin, pout = self.spec.price()
         return (prompt_tokens * pin + max_out * pout) / 1_000_000

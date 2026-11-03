@@ -85,3 +85,24 @@ def test_budget_checked_before_call(monkeypatch):
     with pytest.raises(BudgetExceeded):
         llm.chat([{"role": "user", "content": "x"}], est_prompt_tokens=10_000)
     assert not called
+
+
+def test_preflight_ollama(monkeypatch):
+    llm = LLM(ModelSpec("ollama", "qwen3:4b"), Budget(1))
+
+    class M:
+        def __init__(self, i):
+            self.id = i
+
+    monkeypatch.setattr(llm.client.models, "list", lambda: [M("qwen3:4b")])
+    llm.preflight()
+    llm.spec = ModelSpec("ollama", "missing:1b")
+    with pytest.raises(ModelNotFound, match="ollama pull missing:1b"):
+        llm.preflight()
+
+    def down():
+        raise openai.APIConnectionError(request=REQ)
+
+    monkeypatch.setattr(llm.client.models, "list", down)
+    with pytest.raises(ProviderUnreachable, match="ollama serve"):
+        llm.preflight()

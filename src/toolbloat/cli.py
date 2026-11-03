@@ -223,6 +223,8 @@ def run(
 
         budget = Budget(max_cost=max_cost)
         llms = [LLM(s, budget) for s in specs]
+        for llm in llms:
+            llm.preflight()
         results_servers = _discover(config, server, timeout)
         tools = [t for r in results_servers for t in r.tools]
         if not tools:
@@ -255,6 +257,8 @@ def run(
                 )
 
             calls, stopped = evaluate.run(llms, tools, items, cache=cache, on_call=tick)
+        if stopped and not calls:
+            raise ToolbloatError(stopped)
     except ToolbloatError as e:
         _fail(e)
 
