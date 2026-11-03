@@ -1,0 +1,187 @@
+# toolbloat intents: realistic user requests and the tool that should answer each.
+# Edit freely. `tool` is server/tool. `also_ok` lists other acceptable tools.
+# Delete an entry to have it regenerated on the next run; set `skip: true` to ignore it.
+generated_by: mistral:ministral-8b-latest
+generated_at: '2026-11-03'
+reviewed: true
+intents:
+- id: filesystem-read_file-1
+  tool: filesystem/read_file
+  text: Can you show me the last 10 lines of the server logs from `/var/log/nginx/error.log` to see if
+    there are any recent issues?
+  also_ok:
+  - filesystem/read_text_file
+- id: filesystem-read_text_file-1
+  tool: filesystem/read_text_file
+  text: Can you show me the first 10 lines of the 'project_requirements.txt' file located in the 'docs'
+    directory to confirm the latest dependencies?
+  also_ok:
+  - filesystem/read_file
+- id: filesystem-read_media_file-1
+  tool: filesystem/read_media_file
+  text: Can you show me the base64-encoded version of the latest project logo in the `/designs/branding/`
+    folder? It's called `logo_v2.png` and I need it for a quick email template.
+- id: filesystem-read_multiple_files-1
+  tool: filesystem/read_multiple_files
+  text: I need to compare the latest versions of three configuration files (`/config/app_settings_1.json`,
+    `/config/app_settings_2.json`, and `/config/app_settings_3.json`) from our deployment directory—can
+    you fetch all of them at once?
+- id: filesystem-write_file-1
+  tool: filesystem/write_file
+  text: Create a new file called 'project_plan.txt' in the 'docs' folder with the latest project timeline
+    and milestones I drafted, so I can share it with the team.
+- id: filesystem-edit_file-1
+  tool: filesystem/edit_file
+  text: I need to update the version number in the `project/version.txt` file from `1.2.3` to `1.2.4`
+    and also add a new release note at the bottom of the file. Can you make those changes for me?
+- id: filesystem-create_directory-1
+  tool: filesystem/create_directory
+  text: Could you create the necessary folders for my new project? I need a structure with `project_root/data/raw`,
+    `project_root/data/processed`, and `project_root/notebooks`—make sure all parent directories exist,
+    even if they’re empty.
+- id: filesystem-list_directory-1
+  tool: filesystem/list_directory
+  text: What files and folders are directly inside the `projects/webapp` folder?
+  also_ok:
+  - filesystem/list_directory_with_sizes
+- id: filesystem-list_directory_with_sizes-1
+  tool: filesystem/list_directory_with_sizes
+  text: Could you show me all the files and folders in my 'Documents' directory, including their sizes,
+    sorted by size so I can see what’s taking up the most space?
+- id: filesystem-directory_tree-1
+  tool: filesystem/directory_tree
+  text: Can you show me a structured breakdown of all the files and folders inside the `/projects/2023/reports/`
+    directory, including subdirectories? I need to visualize the hierarchy to understand the layout before
+    I start working on it.
+- id: filesystem-move_file-1
+  tool: filesystem/move_file
+  text: Could you move the file 'report_2023_q3.pdf' from '/documents/finance/quarterly' to '/documents/finance/archives'?
+- id: filesystem-search_files-1
+  tool: filesystem/search_files
+  text: Can you find all the `.md` files in the `docs` and `projects` directories, but exclude any in
+    the `temp` folder?
+- id: filesystem-get_file_info-1
+  tool: filesystem/get_file_info
+  text: Can you show me the size, last modified date, and permissions for the file `/projects/report_v2/data.csv`
+    without opening it?
+- id: filesystem-list_allowed_directories-1
+  tool: filesystem/list_allowed_directories
+  text: Which directories is this server allowed to access? I want to know where I can look before opening
+    any files.
+- id: memory-create_entities-1
+  tool: memory/create_entities
+  text: 'I need to add several new locations to our system, including ''Central Park'' (type: Park) with
+    observations like ''opened in 1857'', ''area: 843 acres'', and ''managed by NYC Parks'', and ''Times
+    Square'' (type: Landmark) with details such as ''famous for neon lights'', ''annual visitor count:
+    40 million'', and ''hosts NYE celebrations''. Please create these entities and their observations
+    at once.'
+- id: memory-create_relations-1
+  tool: memory/create_relations
+  text: I need to establish that the company 'TechSolutions Inc.' was acquired by 'GiantCorp' in 2022,
+    and also link 'Jane Doe' as the CEO of 'TechSolutions Inc.' before the acquisition.
+- id: memory-add_observations-1
+  tool: memory/add_observations
+  text: I just found that the 'New York City Marathon 2023' event had a record-breaking finish time of
+    2:01:39 set by Kelvin Kiptum, and I'd like to add this detail to the event's existing records in our
+    knowledge base.
+- id: memory-delete_entities-1
+  tool: memory/delete_entities
+  text: I need to remove all outdated product listings from our inventory system, specifically the items
+    named 'Widget Pro 2023', 'SmartGadget X', and 'EcoBulb 3000' along with any related connections to
+    suppliers or categories.
+- id: memory-delete_observations-1
+  tool: memory/delete_observations
+  text: I need to remove the outdated inventory counts from the 'Warehouse_A' entity, specifically the
+    observations dated '2023-10-15' and '2023-10-18' where the stock levels were recorded as 150 units
+    for Product_X and 85 units for Product_Y. Can you handle that?
+- id: memory-delete_relations-1
+  tool: memory/delete_relations
+  text: I need to remove the 'manages' relationship between the department 'Engineering' and the project
+    'API Overhaul', as well as the 'depends_on' link between 'Frontend' and 'Backend' services. Could
+    you handle that for me?
+- id: memory-read_graph-1
+  tool: memory/read_graph
+  text: Show me the complete list of all entities and their relationships in the knowledge graph, including
+    all properties and connections between them.
+- id: memory-search_nodes-1
+  tool: memory/search_nodes
+  text: Can you find all entities related to the '2023 Q3 financial performance review' where the document
+    mentions 'revenue growth' and includes the term 'North America' in the observations?
+- id: memory-open_nodes-1
+  tool: memory/open_nodes
+  text: I need to look up the details for the entities named 'Apple Inc.', 'Elon Musk', and 'Tesla Model
+    S' in our knowledge graph—can you fetch those specific nodes for me?
+- id: everything-echo-1
+  tool: everything/echo
+  text: 'Can you just repeat back the exact text I sent: ''Please confirm the order details: customer
+    ID 12345, product XYZ-789, quantity 2, and shipping address 123 Main St, Anytown, CA 90210''?'
+- id: everything-get-annotated-message-1
+  tool: everything/get-annotated-message
+  text: Show me an example error message with annotations so I can see how content metadata looks.
+- id: everything-get-env-1
+  tool: everything/get-env
+  text: I'm having trouble with the server configuration and need to check all the environment variables
+    to see if anything is misconfigured. Could you show me the current settings, especially anything related
+    to database connections or API keys?
+- id: everything-get-header-params-1
+  tool: everything/get-header-params
+  text: Can you show me the region 'ap-southeast-1' and confirm what the Mcp-Param-Region header was when
+    this request was made?
+- id: everything-get-resource-links-1
+  tool: everything/get-resource-links
+  text: Give me 5 links to the sample resources this server provides.
+- id: everything-get-resource-reference-1
+  tool: everything/get-resource-reference
+  text: I need to fetch the text content for the resource with ID 42 so I can process it further in my
+    application workflow.
+- id: everything-get-structured-content-1
+  tool: everything/get-structured-content
+  text: Give me the weather for Chicago as structured data that I can validate against a schema.
+- id: everything-get-sum-1
+  tool: everything/get-sum
+  text: What is the total when I combine the values 15.75 and 22.30?
+- id: everything-get-tiny-image-1
+  tool: everything/get-tiny-image
+  text: Can you show me a tiny version of the MCP logo for my website header?
+- id: everything-gzip-file-as-resource-1
+  tool: everything/gzip-file-as-resource
+  text: Can you compress the latest README from the modelcontextprotocol/servers repo and save it as a
+    downloadable file named 'docs-latest.md.gz' so I can include it in my deployment package?
+- id: everything-trigger-list-changed-1
+  tool: everything/trigger-list-changed
+  text: Announce to connected clients that the prompts list has changed.
+- id: everything-trigger-log-messages-1
+  tool: everything/trigger-log-messages
+  text: Make the server send a burst of log messages at different levels so I can test my log viewer.
+- id: everything-trigger-long-running-operation-1
+  tool: everything/trigger-long-running-operation
+  text: I need to simulate a long-running data processing task that takes about 15 seconds to complete,
+    with 8 distinct progress steps so I can visualize how the system updates in real-time.
+- id: everything-trigger-resource-update-1
+  tool: everything/trigger-resource-update
+  text: Hey, I just updated the content for the user profile at `users://profiles/12345`—can you let all
+    subscribers know it’s changed?
+- id: everything-toggle-simulated-logging-1
+  tool: everything/toggle-simulated-logging
+  text: I need to turn off the simulated logging for this session since it's making the debug output too
+    noisy and interfering with my testing of the new API calls.
+- id: everything-toggle-subscriber-updates-1
+  tool: everything/toggle-subscriber-updates
+  text: I need to temporarily pause all simulated subscription updates for the `/api/v1/orders` resource
+    so our frontend can catch up with the latest changes without flooding the UI.
+- id: thinking-sequentialthinking-1
+  tool: thinking/sequentialthinking
+  text: I'm trying to design a new workflow for our customer support team that involves multiple steps—first
+    triaging issues, then escalating to specialists, and finally following up—but I'm not entirely sure
+    how to structure it yet. Can you help me break this down and refine it as I think through the details?
+- id: time-get_current_time-1
+  tool: time/get_current_time
+  text: What time is it right now in Sydney, Australia?
+- id: time-convert_time-1
+  tool: time/convert_time
+  text: What time is it in Sydney, Australia right now if it's 3:45 PM in Madrid?
+- id: fetch-fetch-1
+  tool: fetch/fetch
+  text: Can you grab the latest news article from https://www.bbc.com/news/technology and summarize the
+    main points for me? I'd like to see the most important details from the first 1000 characters of the
+    content.

@@ -1,0 +1,3677 @@
+{
+ "schema_version": 1,
+ "tool": "toolbloat",
+ "version": "0.1.0",
+ "created_at": "2026-11-03T17:07:24Z",
+ "environment": {
+  "hardware": "Apple M4, 16 GB RAM, macOS 27.2",
+  "python": "3.12.12"
+ },
+ "tokenizer": "o200k_base",
+ "servers": [
+  {
+   "name": "filesystem",
+   "command": "npx -y @modelcontextprotocol/server-filesystem@2.1.0 .",
+   "server_version": "secure-filesystem-server 2.1.0",
+   "error": null,
+   "tools": [
+    {
+     "name": "read_file",
+     "description": "Read the complete contents of a file as text. DEPRECATED: Use read_text_file instead.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "tail": {
+        "description": "If provided, returns only the last N lines of the file",
+        "type": "number"
+       },
+       "head": {
+        "description": "If provided, returns only the first N lines of the file",
+        "type": "number"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 117
+    },
+    {
+     "name": "read_text_file",
+     "description": "Read the complete contents of a file from the file system as text. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Operates on the file as text regardless of extension. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "tail": {
+        "description": "If provided, returns only the last N lines of the file",
+        "type": "number"
+       },
+       "head": {
+        "description": "If provided, returns only the first N lines of the file",
+        "type": "number"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 196
+    },
+    {
+     "name": "read_media_file",
+     "description": "Read a file and return it as a base64-encoded content block with its MIME type. Image and audio files are returned as image/audio content; any other file type is returned as an embedded resource. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 102
+    },
+    {
+     "name": "read_multiple_files",
+     "description": "Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "paths": {
+        "minItems": 1,
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "Array of file paths to read. Each path must be a string pointing to a valid file within allowed directories."
+       }
+      },
+      "required": [
+       "paths"
+      ]
+     },
+     "tokens": 150
+    },
+    {
+     "name": "write_file",
+     "description": "Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "content": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "path",
+       "content"
+      ]
+     },
+     "tokens": 102
+    },
+    {
+     "name": "edit_file",
+     "description": "Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "edits": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "oldText": {
+           "type": "string",
+           "description": "Text to search for - must match exactly"
+          },
+          "newText": {
+           "type": "string",
+           "description": "Text to replace with"
+          }
+         },
+         "required": [
+          "oldText",
+          "newText"
+         ]
+        }
+       },
+       "dryRun": {
+        "default": false,
+        "description": "Preview changes using git-style diff format",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "path",
+       "edits"
+      ]
+     },
+     "tokens": 173
+    },
+    {
+     "name": "create_directory",
+     "description": "Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 105
+    },
+    {
+     "name": "list_directory",
+     "description": "Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 107
+    },
+    {
+     "name": "list_directory_with_sizes",
+     "description": "Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "sortBy": {
+        "default": "name",
+        "description": "Sort entries by name or size",
+        "type": "string",
+        "enum": [
+         "name",
+         "size"
+        ]
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 140
+    },
+    {
+     "name": "directory_tree",
+     "description": "Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "excludePatterns": {
+        "default": [],
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 143
+    },
+    {
+     "name": "move_file",
+     "description": "Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "source": {
+        "type": "string"
+       },
+       "destination": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "source",
+       "destination"
+      ]
+     },
+     "tokens": 120
+    },
+    {
+     "name": "search_files",
+     "description": "Recursively search for files and directories matching a pattern. The patterns should be glob-style patterns that match paths relative to the working directory. Use pattern like '*.ext' to match files in current directory, and '**/*.ext' to match files in all subdirectories. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       },
+       "pattern": {
+        "type": "string"
+       },
+       "excludePatterns": {
+        "default": [],
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "path",
+       "pattern"
+      ]
+     },
+     "tokens": 159
+    },
+    {
+     "name": "get_file_info",
+     "description": "Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, type and hard-link count. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "path": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "path"
+      ]
+     },
+     "tokens": 105
+    },
+    {
+     "name": "list_allowed_directories",
+     "description": "Returns the list of directories that this server is allowed to access. Subdirectories within these allowed directories are also accessible. Use this to understand which directories and their nested paths are available before trying to access files.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 87
+    }
+   ]
+  },
+  {
+   "name": "memory",
+   "command": "npx -y @modelcontextprotocol/server-memory@2.0.1",
+   "server_version": "memory-server 2.0.1",
+   "error": null,
+   "tools": [
+    {
+     "name": "create_entities",
+     "description": "Create multiple new entities in the knowledge graph. An entity whose name already exists, or repeats an earlier entity in the same call, is skipped and its observations are not added; the result lists the skipped names in `skipped`. Use add_observations to add observations to an existing entity.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "entities": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "name": {
+           "type": "string",
+           "description": "The name of the entity"
+          },
+          "entityType": {
+           "type": "string",
+           "description": "The type of the entity"
+          },
+          "observations": {
+           "type": "array",
+           "items": {
+            "type": "string"
+           },
+           "description": "An array of observation contents associated with the entity"
+          }
+         },
+         "required": [
+          "name",
+          "entityType",
+          "observations"
+         ]
+        }
+       }
+      },
+      "required": [
+       "entities"
+      ]
+     },
+     "tokens": 190
+    },
+    {
+     "name": "create_relations",
+     "description": "Create multiple new relations between entities in the knowledge graph. Relations should be in active voice",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "relations": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "from": {
+           "type": "string",
+           "description": "The name of the entity where the relation starts"
+          },
+          "to": {
+           "type": "string",
+           "description": "The name of the entity where the relation ends"
+          },
+          "relationType": {
+           "type": "string",
+           "description": "The type of the relation"
+          }
+         },
+         "required": [
+          "from",
+          "to",
+          "relationType"
+         ]
+        }
+       }
+      },
+      "required": [
+       "relations"
+      ]
+     },
+     "tokens": 145
+    },
+    {
+     "name": "add_observations",
+     "description": "Add new observations to existing entities in the knowledge graph",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "observations": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "entityName": {
+           "type": "string",
+           "description": "The name of the entity to add the observations to"
+          },
+          "contents": {
+           "type": "array",
+           "items": {
+            "type": "string"
+           },
+           "description": "An array of observation contents to add"
+          }
+         },
+         "required": [
+          "entityName",
+          "contents"
+         ]
+        }
+       }
+      },
+      "required": [
+       "observations"
+      ]
+     },
+     "tokens": 130
+    },
+    {
+     "name": "delete_entities",
+     "description": "Delete multiple entities and their associated relations from the knowledge graph",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "entityNames": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "An array of entity names to delete"
+       }
+      },
+      "required": [
+       "entityNames"
+      ]
+     },
+     "tokens": 85
+    },
+    {
+     "name": "delete_observations",
+     "description": "Delete specific observations from entities in the knowledge graph",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "deletions": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "entityName": {
+           "type": "string",
+           "description": "The name of the entity containing the observations"
+          },
+          "observations": {
+           "type": "array",
+           "items": {
+            "type": "string"
+           },
+           "description": "An array of observations to delete"
+          }
+         },
+         "required": [
+          "entityName",
+          "observations"
+         ]
+        }
+       }
+      },
+      "required": [
+       "deletions"
+      ]
+     },
+     "tokens": 130
+    },
+    {
+     "name": "delete_relations",
+     "description": "Delete multiple relations from the knowledge graph",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "relations": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "from": {
+           "type": "string",
+           "description": "The name of the entity where the relation starts"
+          },
+          "to": {
+           "type": "string",
+           "description": "The name of the entity where the relation ends"
+          },
+          "relationType": {
+           "type": "string",
+           "description": "The type of the relation"
+          }
+         },
+         "required": [
+          "from",
+          "to",
+          "relationType"
+         ]
+        },
+        "description": "An array of relations to delete"
+       }
+      },
+      "required": [
+       "relations"
+      ]
+     },
+     "tokens": 144
+    },
+    {
+     "name": "read_graph",
+     "description": "Read the entire knowledge graph",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 50
+    },
+    {
+     "name": "search_nodes",
+     "description": "Search for nodes in the knowledge graph based on a query",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "query": {
+        "type": "string",
+        "maxLength": 2048,
+        "description": "The search query to match against entity names, types, and observation content"
+       }
+      },
+      "required": [
+       "query"
+      ]
+     },
+     "tokens": 89
+    },
+    {
+     "name": "open_nodes",
+     "description": "Open specific nodes in the knowledge graph by their names",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "names": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "An array of entity names to retrieve"
+       }
+      },
+      "required": [
+       "names"
+      ]
+     },
+     "tokens": 82
+    }
+   ]
+  },
+  {
+   "name": "everything",
+   "command": "npx -y @modelcontextprotocol/server-everything@2.1.0",
+   "server_version": "mcp-servers/everything 2.1.0",
+   "error": null,
+   "tools": [
+    {
+     "name": "echo",
+     "description": "Echoes back the input string",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "message": {
+        "type": "string",
+        "description": "Message to echo"
+       }
+      },
+      "required": [
+       "message"
+      ]
+     },
+     "tokens": 66
+    },
+    {
+     "name": "get-annotated-message",
+     "description": "Demonstrates how annotations can be used to provide metadata about content.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "messageType": {
+        "type": "string",
+        "enum": [
+         "error",
+         "success",
+         "debug"
+        ],
+        "description": "Type of message to demonstrate different annotation patterns"
+       },
+       "includeImage": {
+        "default": false,
+        "description": "Whether to include an example image",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "messageType"
+      ]
+     },
+     "tokens": 114
+    },
+    {
+     "name": "get-env",
+     "description": "Returns all environment variables, helpful for debugging MCP server configuration. Values of credential-like names (a KEY, TOKEN, SECRET, PASSWORD, PASSWD, CREDENTIAL, AUTH or COOKIE name segment) are masked as \"<redacted>\" unless GET_ENV_INCLUDE_SECRETS is set to 1 or true in the server's environment.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 112
+    },
+    {
+     "name": "get-header-params",
+     "description": "Returns its region argument and the Mcp-Param-Region HTTP header it arrived in. Demonstrates x-mcp-header (a 2026-07-28 Streamable HTTP client mirrors the argument into the header) and JSON Schema 2020-12 input and output schemas.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "region": {
+        "type": "string",
+        "description": "A region name, e.g. eu-west. Mirrored into the Mcp-Param-Region HTTP header.",
+        "x-mcp-header": "Region"
+       },
+       "repeat": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 3,
+        "default": 1,
+        "description": "How many times to repeat the region in the result (1-3)"
+       }
+      },
+      "required": [
+       "region"
+      ],
+      "additionalProperties": false
+     },
+     "tokens": 187
+    },
+    {
+     "name": "get-resource-links",
+     "description": "Returns up to ten resource links that reference different types of resources",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "count": {
+        "default": 3,
+        "description": "Number of resource links to return (1-10)",
+        "type": "number",
+        "minimum": 1,
+        "maximum": 10
+       }
+      }
+     },
+     "tokens": 89
+    },
+    {
+     "name": "get-resource-reference",
+     "description": "Returns a resource reference that can be used by MCP clients",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "resourceType": {
+        "default": "Text",
+        "type": "string",
+        "enum": [
+         "Text",
+         "Blob"
+        ]
+       },
+       "resourceId": {
+        "default": 1,
+        "description": "ID of the text resource to fetch",
+        "type": "number"
+       }
+      }
+     },
+     "tokens": 95
+    },
+    {
+     "name": "get-structured-content",
+     "description": "Returns structured content along with an output schema for client data validation",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "location": {
+        "type": "string",
+        "enum": [
+         "New York",
+         "Chicago",
+         "Los Angeles"
+        ],
+        "description": "Choose city"
+       }
+      },
+      "required": [
+       "location"
+      ]
+     },
+     "tokens": 85
+    },
+    {
+     "name": "get-sum",
+     "description": "Returns the sum of two numbers",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "a": {
+        "type": "number",
+        "description": "First number"
+       },
+       "b": {
+        "type": "number",
+        "description": "Second number"
+       }
+      },
+      "required": [
+       "a",
+       "b"
+      ]
+     },
+     "tokens": 81
+    },
+    {
+     "name": "get-tiny-image",
+     "description": "Returns a tiny MCP logo image.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 53
+    },
+    {
+     "name": "gzip-file-as-resource",
+     "description": "Compresses a single file using gzip compression. Depending upon the selected output type, returns either the compressed data as a gzipped resource or a resource link, allowing it to be downloaded in a subsequent request: during the current session for a 2025-era client, or for ten minutes at a minted URI on protocol version 2026-07-28.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "name": {
+        "default": "README.md.gz",
+        "type": "string",
+        "maxLength": 255,
+        "description": "Name of the output file (at most 255 characters)"
+       },
+       "data": {
+        "default": "https://raw.githubusercontent.com/modelcontextprotocol/servers/refs/heads/main/README.md",
+        "type": "string",
+        "format": "uri",
+        "description": "URL or data URI of the file content to compress"
+       },
+       "outputType": {
+        "default": "resourceLink",
+        "description": "How the resulting gzipped file should be returned. 'resourceLink' returns a link to a resource that can be read later, 'resource' returns a full resource object.",
+        "type": "string",
+        "enum": [
+         "resourceLink",
+         "resource"
+        ]
+       }
+      }
+     },
+     "tokens": 252
+    },
+    {
+     "name": "trigger-list-changed",
+     "description": "Sends a notifications/<list>/list_changed for the tool, prompt or resource list. On protocol version 2026-07-28 it is delivered on each subscriptions/listen stream that asked for that list; a 2025-era client receives it unsolicited.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "list": {
+        "type": "string",
+        "enum": [
+         "tools",
+         "prompts",
+         "resources"
+        ],
+        "description": "Which list to announce as changed"
+       }
+      },
+      "required": [
+       "list"
+      ]
+     },
+     "tokens": 128
+    },
+    {
+     "name": "trigger-log-messages",
+     "description": "Sends one log message at each logging level during the call. On protocol version 2026-07-28 only the messages at or above the level the request names in _meta (io.modelcontextprotocol/logLevel) are sent, and none if it names no level; a 2025-era client gets those at or above the level it set with logging/setLevel. Deprecated: logging is deprecated as of protocol version 2026-07-28.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 139
+    },
+    {
+     "name": "trigger-long-running-operation",
+     "description": "Demonstrates a long running operation with progress updates.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "duration": {
+        "default": 10,
+        "description": "Duration of the operation in seconds",
+        "type": "number"
+       },
+       "steps": {
+        "default": 5,
+        "description": "Number of steps in the operation",
+        "type": "number"
+       }
+      }
+     },
+     "tokens": 95
+    },
+    {
+     "name": "trigger-resource-update",
+     "description": "Sends a notifications/resources/updated for a resource URI. On protocol version 2026-07-28 it is delivered on each subscriptions/listen stream whose resourceSubscriptions name the URI; a 2025-era client receives it once it has called resources/subscribe for the URI.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "uri": {
+        "type": "string",
+        "description": "The URI of the resource to announce as updated, e.g. demo://resource/dynamic/text/1"
+       }
+      },
+      "required": [
+       "uri"
+      ]
+     },
+     "tokens": 136
+    },
+    {
+     "name": "toggle-simulated-logging",
+     "description": "Toggles simulated, random-leveled logging on or off. Deprecated: 2025-era clients only, since protocol version 2026-07-28 removes logging/setLevel; use trigger-log-messages with a per-request log level instead.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 99
+    },
+    {
+     "name": "toggle-subscriber-updates",
+     "description": "Toggles simulated resource subscription updates on or off. Deprecated: 2025-era clients only, since protocol version 2026-07-28 removes resources/subscribe; use trigger-resource-update with a subscriptions/listen stream instead.",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+     },
+     "tokens": 94
+    }
+   ]
+  },
+  {
+   "name": "thinking",
+   "command": "npx -y @modelcontextprotocol/server-sequential-thinking@2.0.0",
+   "server_version": "sequential-thinking-server 2.0.0",
+   "error": null,
+   "tools": [
+    {
+     "name": "sequentialthinking",
+     "description": "A detailed tool for dynamic and reflective problem-solving through thoughts.\nThis tool helps analyze problems through a flexible thinking process that can adapt and evolve.\nEach thought can build on, question, or revise previous insights as understanding deepens.\n\nWhen to use this tool:\n- Breaking down complex problems into steps\n- Planning and design with room for revision\n- Analysis that might need course correction\n- Problems where the full scope might not be clear initially\n- Problems that require a multi-step solution\n- Tasks that need to maintain context over multiple steps\n- Situations where irrelevant information needs to be filtered out\n\nKey features:\n- You can adjust total_thoughts up or down as you progress\n- You can question or revise previous thoughts\n- You can add more thoughts even after reaching what seemed like the end\n- You can express uncertainty and explore alternative approaches\n- Not every thought needs to build linearly - you can branch or backtrack\n- Generates a solution hypothesis\n- Verifies the hypothesis based on the Chain of Thought steps\n- Repeats the process until satisfied\n- Provides a correct answer\n\nParameters explained:\n- thought: Your current thinking step, which can include:\n  * Regular analytical steps\n  * Revisions of previous thoughts\n  * Questions about previous decisions\n  * Realizations about needing more analysis\n  * Changes in approach\n  * Hypothesis generation\n  * Hypothesis verification\n- nextThoughtNeeded: True if you need more thinking, even if at what seemed like the end\n- thoughtNumber: Current number in sequence (can go beyond initial total if needed)\n- totalThoughts: Current estimate of thoughts needed (can be adjusted up/down)\n- isRevision: A boolean indicating if this thought revises previous thinking\n- revisesThought: If is_revision is true, which thought number is being reconsidered\n- branchFromThought: If branching, which thought number is the branching point\n- branchId: Identifier for the current branch (if any)\n- needsMoreThoughts: If reaching end but realizing more thoughts needed\n\nYou should:\n1. Start with an initial estimate of needed thoughts, but be ready to adjust\n2. Feel free to question or revise previous thoughts\n3. Don't hesitate to add more thoughts if needed, even at the \"end\"\n4. Express uncertainty when present\n5. Mark thoughts that revise previous thinking or branch into new paths\n6. Ignore information that is irrelevant to the current step\n7. Generate a solution hypothesis when appropriate\n8. Verify the hypothesis based on the Chain of Thought steps\n9. Repeat the process until satisfied with the solution\n10. Provide a single, ideally correct answer as the final output\n11. Only set nextThoughtNeeded to false when truly done and a satisfactory answer is reached",
+     "input_schema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+       "thought": {
+        "type": "string",
+        "description": "Your current thinking step"
+       },
+       "nextThoughtNeeded": {
+        "description": "Whether another thought step is needed",
+        "type": [
+         "boolean",
+         "string"
+        ]
+       },
+       "thoughtNumber": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991,
+        "description": "Current thought number (numeric value, e.g., 1, 2, 3)"
+       },
+       "totalThoughts": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991,
+        "description": "Estimated total thoughts needed (numeric value, e.g., 5, 10)"
+       },
+       "isRevision": {
+        "description": "Whether this revises previous thinking",
+        "type": [
+         "boolean",
+         "string"
+        ]
+       },
+       "revisesThought": {
+        "description": "Which thought is being reconsidered",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+       },
+       "branchFromThought": {
+        "description": "Branching point thought number",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+       },
+       "branchId": {
+        "description": "Branch identifier",
+        "type": "string"
+       },
+       "needsMoreThoughts": {
+        "description": "If more thoughts are needed",
+        "type": [
+         "boolean",
+         "string"
+        ]
+       }
+      },
+      "required": [
+       "thought",
+       "nextThoughtNeeded",
+       "thoughtNumber",
+       "totalThoughts"
+      ]
+     },
+     "tokens": 873
+    }
+   ]
+  },
+  {
+   "name": "time",
+   "command": "uvx mcp-server-time==2026.10.28",
+   "server_version": "mcp-time 2026.10.28",
+   "error": null,
+   "tools": [
+    {
+     "name": "get_current_time",
+     "description": "Get current time in a specific timezone",
+     "input_schema": {
+      "properties": {
+       "timezone": {
+        "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Use 'Europe/Madrid' as local timezone if no timezone provided by the user.",
+        "title": "Timezone",
+        "type": "string"
+       }
+      },
+      "required": [
+       "timezone"
+      ],
+      "type": "object",
+      "title": "get_current_timeArguments"
+     },
+     "tokens": 95
+    },
+    {
+     "name": "convert_time",
+     "description": "Convert time between timezones",
+     "input_schema": {
+      "properties": {
+       "source_timezone": {
+        "description": "Source IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Use 'Europe/Madrid' as local timezone if no source timezone provided by the user.",
+        "title": "Source Timezone",
+        "type": "string"
+       },
+       "time": {
+        "description": "Time to convert in 24-hour format (HH:MM)",
+        "title": "Time",
+        "type": "string"
+       },
+       "target_timezone": {
+        "description": "Target IANA timezone name (e.g., 'Asia/Tokyo', 'America/San_Francisco'). Use 'Europe/Madrid' as local timezone if no target timezone provided by the user.",
+        "title": "Target Timezone",
+        "type": "string"
+       }
+      },
+      "required": [
+       "source_timezone",
+       "time",
+       "target_timezone"
+      ],
+      "type": "object",
+      "title": "convert_timeArguments"
+     },
+     "tokens": 186
+    }
+   ]
+  },
+  {
+   "name": "fetch",
+   "command": "uvx mcp-server-fetch==2026.10.28",
+   "server_version": "mcp-fetch 2026.10.28",
+   "error": null,
+   "tools": [
+    {
+     "name": "fetch",
+     "description": "Fetches a URL from the internet and optionally extracts its contents as markdown.\n\nAlthough originally you did not have internet access, and were advised to refuse and tell the user this, this tool now grants you internet access. Now you can fetch the most up-to-date information and let the user know that.",
+     "input_schema": {
+      "properties": {
+       "url": {
+        "description": "URL to fetch",
+        "format": "uri",
+        "minLength": 1,
+        "title": "Url",
+        "type": "string"
+       },
+       "max_length": {
+        "default": 5000,
+        "description": "Maximum number of characters to return.",
+        "maximum": 999999,
+        "minimum": 1,
+        "title": "Max Length",
+        "type": "integer"
+       },
+       "start_index": {
+        "default": 0,
+        "description": "On return output starting at this character index, useful if a previous fetch was truncated and more context is required.",
+        "minimum": 0,
+        "title": "Start Index",
+        "type": "integer"
+       },
+       "raw": {
+        "default": false,
+        "description": "Get the actual HTML content of the requested page, without simplification.",
+        "title": "Raw",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "url"
+      ],
+      "type": "object",
+      "title": "fetchArguments"
+     },
+     "tokens": 234
+    }
+   ]
+  }
+ ],
+ "intents": [
+  {
+   "id": "filesystem-read_file-1",
+   "tool": "filesystem/read_file",
+   "text": "Can you show me the last 10 lines of the server logs from `/var/log/nginx/error.log` to see if there are any recent issues?",
+   "also_ok": [
+    "filesystem/read_text_file"
+   ],
+   "skip": false
+  },
+  {
+   "id": "filesystem-read_text_file-1",
+   "tool": "filesystem/read_text_file",
+   "text": "Can you show me the first 10 lines of the 'project_requirements.txt' file located in the 'docs' directory to confirm the latest dependencies?",
+   "also_ok": [
+    "filesystem/read_file"
+   ],
+   "skip": false
+  },
+  {
+   "id": "filesystem-read_media_file-1",
+   "tool": "filesystem/read_media_file",
+   "text": "Can you show me the base64-encoded version of the latest project logo in the `/designs/branding/` folder? It's called `logo_v2.png` and I need it for a quick email template.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-read_multiple_files-1",
+   "tool": "filesystem/read_multiple_files",
+   "text": "I need to compare the latest versions of three configuration files (`/config/app_settings_1.json`, `/config/app_settings_2.json`, and `/config/app_settings_3.json`) from our deployment directory—can you fetch all of them at once?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-write_file-1",
+   "tool": "filesystem/write_file",
+   "text": "Create a new file called 'project_plan.txt' in the 'docs' folder with the latest project timeline and milestones I drafted, so I can share it with the team.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-edit_file-1",
+   "tool": "filesystem/edit_file",
+   "text": "I need to update the version number in the `project/version.txt` file from `1.2.3` to `1.2.4` and also add a new release note at the bottom of the file. Can you make those changes for me?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-create_directory-1",
+   "tool": "filesystem/create_directory",
+   "text": "Could you create the necessary folders for my new project? I need a structure with `project_root/data/raw`, `project_root/data/processed`, and `project_root/notebooks`—make sure all parent directories exist, even if they’re empty.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-list_directory-1",
+   "tool": "filesystem/list_directory",
+   "text": "What files and folders are directly inside the `projects/webapp` folder?",
+   "also_ok": [
+    "filesystem/list_directory_with_sizes"
+   ],
+   "skip": false
+  },
+  {
+   "id": "filesystem-list_directory_with_sizes-1",
+   "tool": "filesystem/list_directory_with_sizes",
+   "text": "Could you show me all the files and folders in my 'Documents' directory, including their sizes, sorted by size so I can see what’s taking up the most space?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-directory_tree-1",
+   "tool": "filesystem/directory_tree",
+   "text": "Can you show me a structured breakdown of all the files and folders inside the `/projects/2023/reports/` directory, including subdirectories? I need to visualize the hierarchy to understand the layout before I start working on it.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-move_file-1",
+   "tool": "filesystem/move_file",
+   "text": "Could you move the file 'report_2023_q3.pdf' from '/documents/finance/quarterly' to '/documents/finance/archives'?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-search_files-1",
+   "tool": "filesystem/search_files",
+   "text": "Can you find all the `.md` files in the `docs` and `projects` directories, but exclude any in the `temp` folder?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-get_file_info-1",
+   "tool": "filesystem/get_file_info",
+   "text": "Can you show me the size, last modified date, and permissions for the file `/projects/report_v2/data.csv` without opening it?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "filesystem-list_allowed_directories-1",
+   "tool": "filesystem/list_allowed_directories",
+   "text": "Which directories is this server allowed to access? I want to know where I can look before opening any files.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-create_entities-1",
+   "tool": "memory/create_entities",
+   "text": "I need to add several new locations to our system, including 'Central Park' (type: Park) with observations like 'opened in 1857', 'area: 843 acres', and 'managed by NYC Parks', and 'Times Square' (type: Landmark) with details such as 'famous for neon lights', 'annual visitor count: 40 million', and 'hosts NYE celebrations'. Please create these entities and their observations at once.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-create_relations-1",
+   "tool": "memory/create_relations",
+   "text": "I need to establish that the company 'TechSolutions Inc.' was acquired by 'GiantCorp' in 2022, and also link 'Jane Doe' as the CEO of 'TechSolutions Inc.' before the acquisition.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-add_observations-1",
+   "tool": "memory/add_observations",
+   "text": "I just found that the 'New York City Marathon 2023' event had a record-breaking finish time of 2:01:39 set by Kelvin Kiptum, and I'd like to add this detail to the event's existing records in our knowledge base.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-delete_entities-1",
+   "tool": "memory/delete_entities",
+   "text": "I need to remove all outdated product listings from our inventory system, specifically the items named 'Widget Pro 2023', 'SmartGadget X', and 'EcoBulb 3000' along with any related connections to suppliers or categories.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-delete_observations-1",
+   "tool": "memory/delete_observations",
+   "text": "I need to remove the outdated inventory counts from the 'Warehouse_A' entity, specifically the observations dated '2023-10-15' and '2023-10-18' where the stock levels were recorded as 150 units for Product_X and 85 units for Product_Y. Can you handle that?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-delete_relations-1",
+   "tool": "memory/delete_relations",
+   "text": "I need to remove the 'manages' relationship between the department 'Engineering' and the project 'API Overhaul', as well as the 'depends_on' link between 'Frontend' and 'Backend' services. Could you handle that for me?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-read_graph-1",
+   "tool": "memory/read_graph",
+   "text": "Show me the complete list of all entities and their relationships in the knowledge graph, including all properties and connections between them.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-search_nodes-1",
+   "tool": "memory/search_nodes",
+   "text": "Can you find all entities related to the '2023 Q3 financial performance review' where the document mentions 'revenue growth' and includes the term 'North America' in the observations?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "memory-open_nodes-1",
+   "tool": "memory/open_nodes",
+   "text": "I need to look up the details for the entities named 'Apple Inc.', 'Elon Musk', and 'Tesla Model S' in our knowledge graph—can you fetch those specific nodes for me?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-echo-1",
+   "tool": "everything/echo",
+   "text": "Can you just repeat back the exact text I sent: 'Please confirm the order details: customer ID 12345, product XYZ-789, quantity 2, and shipping address 123 Main St, Anytown, CA 90210'?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-annotated-message-1",
+   "tool": "everything/get-annotated-message",
+   "text": "Show me an example error message with annotations so I can see how content metadata looks.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-env-1",
+   "tool": "everything/get-env",
+   "text": "I'm having trouble with the server configuration and need to check all the environment variables to see if anything is misconfigured. Could you show me the current settings, especially anything related to database connections or API keys?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-header-params-1",
+   "tool": "everything/get-header-params",
+   "text": "Can you show me the region 'ap-southeast-1' and confirm what the Mcp-Param-Region header was when this request was made?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-resource-links-1",
+   "tool": "everything/get-resource-links",
+   "text": "Give me 5 links to the sample resources this server provides.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-resource-reference-1",
+   "tool": "everything/get-resource-reference",
+   "text": "I need to fetch the text content for the resource with ID 42 so I can process it further in my application workflow.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-structured-content-1",
+   "tool": "everything/get-structured-content",
+   "text": "Give me the weather for Chicago as structured data that I can validate against a schema.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-sum-1",
+   "tool": "everything/get-sum",
+   "text": "What is the total when I combine the values 15.75 and 22.30?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-get-tiny-image-1",
+   "tool": "everything/get-tiny-image",
+   "text": "Can you show me a tiny version of the MCP logo for my website header?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-gzip-file-as-resource-1",
+   "tool": "everything/gzip-file-as-resource",
+   "text": "Can you compress the latest README from the modelcontextprotocol/servers repo and save it as a downloadable file named 'docs-latest.md.gz' so I can include it in my deployment package?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-trigger-list-changed-1",
+   "tool": "everything/trigger-list-changed",
+   "text": "Announce to connected clients that the prompts list has changed.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-trigger-log-messages-1",
+   "tool": "everything/trigger-log-messages",
+   "text": "Make the server send a burst of log messages at different levels so I can test my log viewer.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-trigger-long-running-operation-1",
+   "tool": "everything/trigger-long-running-operation",
+   "text": "I need to simulate a long-running data processing task that takes about 15 seconds to complete, with 8 distinct progress steps so I can visualize how the system updates in real-time.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-trigger-resource-update-1",
+   "tool": "everything/trigger-resource-update",
+   "text": "Hey, I just updated the content for the user profile at `users://profiles/12345`—can you let all subscribers know it’s changed?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-toggle-simulated-logging-1",
+   "tool": "everything/toggle-simulated-logging",
+   "text": "I need to turn off the simulated logging for this session since it's making the debug output too noisy and interfering with my testing of the new API calls.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "everything-toggle-subscriber-updates-1",
+   "tool": "everything/toggle-subscriber-updates",
+   "text": "I need to temporarily pause all simulated subscription updates for the `/api/v1/orders` resource so our frontend can catch up with the latest changes without flooding the UI.",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "thinking-sequentialthinking-1",
+   "tool": "thinking/sequentialthinking",
+   "text": "I'm trying to design a new workflow for our customer support team that involves multiple steps—first triaging issues, then escalating to specialists, and finally following up—but I'm not entirely sure how to structure it yet. Can you help me break this down and refine it as I think through the details?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "time-get_current_time-1",
+   "tool": "time/get_current_time",
+   "text": "What time is it right now in Sydney, Australia?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "time-convert_time-1",
+   "tool": "time/convert_time",
+   "text": "What time is it in Sydney, Australia right now if it's 3:45 PM in Madrid?",
+   "also_ok": [],
+   "skip": false
+  },
+  {
+   "id": "fetch-fetch-1",
+   "tool": "fetch/fetch",
+   "text": "Can you grab the latest news article from https://www.bbc.com/news/technology and summarize the main points for me? I'd like to see the most important details from the first 1000 characters of the content.",
+   "also_ok": [],
+   "skip": false
+  }
+ ],
+ "intents_meta": {
+  "generated_by": "mistral:ministral-8b-latest",
+  "generated_at": "2026-11-03",
+  "reviewed": true
+ },
+ "models": [
+  {
+   "id": "mistral:ministral-8b-latest",
+   "price_in": 0.15,
+   "price_out": 0.15
+  },
+  {
+   "id": "mistral:ministral-14b-latest",
+   "price_in": 0.2,
+   "price_out": 0.2
+  }
+ ],
+ "calls": [
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2261,
+   "completion_tokens": 26,
+   "cost": 0.00034305,
+   "seconds": 1.41,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7551,
+   "completion_tokens": 13,
+   "cost": 0.0011346,
+   "seconds": 0.66,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_text_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2262,
+   "completion_tokens": 26,
+   "cost": 0.0003432,
+   "seconds": 0.62,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_text_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7552,
+   "completion_tokens": 13,
+   "cost": 0.00113475,
+   "seconds": 1.43,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_media_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_media_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2276,
+   "completion_tokens": 23,
+   "cost": 0.00034485,
+   "seconds": 0.75,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_media_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/search_files",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7566,
+   "completion_tokens": 27,
+   "cost": 0.00113895,
+   "seconds": 0.9,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_multiple_files-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_multiple_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2281,
+   "completion_tokens": 39,
+   "cost": 0.000348,
+   "seconds": 0.74,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-read_multiple_files-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_multiple_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7571,
+   "completion_tokens": 39,
+   "cost": 0.0011415,
+   "seconds": 4.35,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-write_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/create_directory",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2266,
+   "completion_tokens": 14,
+   "cost": 0.000342,
+   "seconds": 0.53,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-write_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/create_directory",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7556,
+   "completion_tokens": 14,
+   "cost": 0.0011355,
+   "seconds": 0.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-edit_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2284,
+   "completion_tokens": 18,
+   "cost": 0.0003453,
+   "seconds": 0.5,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-edit_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_text_file",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7574,
+   "completion_tokens": 18,
+   "cost": 0.0011388,
+   "seconds": 1.3,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-create_directory-1",
+   "condition": "solo",
+   "chosen": "filesystem/create_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2281,
+   "completion_tokens": 15,
+   "cost": 0.0003444,
+   "seconds": 0.37,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-create_directory-1",
+   "condition": "stack",
+   "chosen": "filesystem/create_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7571,
+   "completion_tokens": 15,
+   "cost": 0.0011379,
+   "seconds": 1.07,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_directory-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2245,
+   "completion_tokens": 16,
+   "cost": 0.00033915,
+   "seconds": 0.48,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_directory-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7535,
+   "completion_tokens": 16,
+   "cost": 0.00113265,
+   "seconds": 1.09,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_directory_with_sizes-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2265,
+   "completion_tokens": 13,
+   "cost": 0.0003417,
+   "seconds": 0.5,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_directory_with_sizes-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7555,
+   "completion_tokens": 13,
+   "cost": 0.0011352,
+   "seconds": 0.53,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-directory_tree-1",
+   "condition": "solo",
+   "chosen": "filesystem/directory_tree",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2279,
+   "completion_tokens": 22,
+   "cost": 0.00034515,
+   "seconds": 0.7,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-directory_tree-1",
+   "condition": "stack",
+   "chosen": "filesystem/directory_tree",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7569,
+   "completion_tokens": 22,
+   "cost": 0.00113865,
+   "seconds": 0.63,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-move_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/move_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2269,
+   "completion_tokens": 54,
+   "cost": 0.00034845,
+   "seconds": 1.94,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-move_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7559,
+   "completion_tokens": 13,
+   "cost": 0.0011358,
+   "seconds": 0.45,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-search_files-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2260,
+   "completion_tokens": 13,
+   "cost": 0.00034095,
+   "seconds": 1.83,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-search_files-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7550,
+   "completion_tokens": 13,
+   "cost": 0.00113445,
+   "seconds": 0.46,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-get_file_info-1",
+   "condition": "solo",
+   "chosen": "filesystem/get_file_info",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2259,
+   "completion_tokens": 21,
+   "cost": 0.000342,
+   "seconds": 0.43,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-get_file_info-1",
+   "condition": "stack",
+   "chosen": "filesystem/get_file_info",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7549,
+   "completion_tokens": 21,
+   "cost": 0.0011355,
+   "seconds": 0.61,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_allowed_directories-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2252,
+   "completion_tokens": 13,
+   "cost": 0.00033975,
+   "seconds": 0.48,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "filesystem-list_allowed_directories-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7542,
+   "completion_tokens": 13,
+   "cost": 0.00113325,
+   "seconds": 0.5,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-create_entities-1",
+   "condition": "solo",
+   "chosen": "memory/create_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1482,
+   "completion_tokens": 101,
+   "cost": 0.00023745,
+   "seconds": 1.44,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-create_entities-1",
+   "condition": "stack",
+   "chosen": "memory/create_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7620,
+   "completion_tokens": 101,
+   "cost": 0.00115815,
+   "seconds": 5.37,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-create_relations-1",
+   "condition": "solo",
+   "chosen": "memory/create_entities",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 1432,
+   "completion_tokens": 164,
+   "cost": 0.0002394,
+   "seconds": 1.72,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-create_relations-1",
+   "condition": "stack",
+   "chosen": "memory/create_entities",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7570,
+   "completion_tokens": 128,
+   "cost": 0.0011547,
+   "seconds": 2.45,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-add_observations-1",
+   "condition": "solo",
+   "chosen": "memory/open_nodes",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 1440,
+   "completion_tokens": 22,
+   "cost": 0.0002193,
+   "seconds": 0.69,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-add_observations-1",
+   "condition": "stack",
+   "chosen": "memory/search_nodes",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7578,
+   "completion_tokens": 21,
+   "cost": 0.00113985,
+   "seconds": 0.81,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_entities-1",
+   "condition": "solo",
+   "chosen": "memory/delete_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1438,
+   "completion_tokens": 41,
+   "cost": 0.00022185,
+   "seconds": 1.0,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_entities-1",
+   "condition": "stack",
+   "chosen": "filesystem/search_files",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7576,
+   "completion_tokens": 24,
+   "cost": 0.00114,
+   "seconds": 0.53,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_observations-1",
+   "condition": "solo",
+   "chosen": "memory/delete_observations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1457,
+   "completion_tokens": 79,
+   "cost": 0.0002304,
+   "seconds": 1.09,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_observations-1",
+   "condition": "stack",
+   "chosen": "memory/search_nodes",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7595,
+   "completion_tokens": 50,
+   "cost": 0.00114675,
+   "seconds": 0.83,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_relations-1",
+   "condition": "solo",
+   "chosen": "memory/delete_relations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1435,
+   "completion_tokens": 58,
+   "cost": 0.00022395,
+   "seconds": 0.68,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-delete_relations-1",
+   "condition": "stack",
+   "chosen": "memory/delete_relations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7573,
+   "completion_tokens": 58,
+   "cost": 0.00114465,
+   "seconds": 1.22,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-read_graph-1",
+   "condition": "solo",
+   "chosen": "memory/read_graph",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1406,
+   "completion_tokens": 8,
+   "cost": 0.0002121,
+   "seconds": 0.56,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-read_graph-1",
+   "condition": "stack",
+   "chosen": "memory/read_graph",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7544,
+   "completion_tokens": 8,
+   "cost": 0.0011328,
+   "seconds": 0.35,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-search_nodes-1",
+   "condition": "solo",
+   "chosen": "memory/search_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1422,
+   "completion_tokens": 25,
+   "cost": 0.00021705,
+   "seconds": 0.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-search_nodes-1",
+   "condition": "stack",
+   "chosen": "memory/search_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7560,
+   "completion_tokens": 33,
+   "cost": 0.00113895,
+   "seconds": 0.51,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-open_nodes-1",
+   "condition": "solo",
+   "chosen": "memory/open_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1424,
+   "completion_tokens": 27,
+   "cost": 0.00021765,
+   "seconds": 0.68,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "memory-open_nodes-1",
+   "condition": "stack",
+   "chosen": "memory/open_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7562,
+   "completion_tokens": 27,
+   "cost": 0.00113835,
+   "seconds": 0.68,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-echo-1",
+   "condition": "solo",
+   "chosen": "everything/echo",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2391,
+   "completion_tokens": 59,
+   "cost": 0.0003675,
+   "seconds": 0.76,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-echo-1",
+   "condition": "stack",
+   "chosen": "everything/echo",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7582,
+   "completion_tokens": 59,
+   "cost": 0.00114615,
+   "seconds": 1.0,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-annotated-message-1",
+   "condition": "solo",
+   "chosen": "everything/get-annotated-message",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2346,
+   "completion_tokens": 23,
+   "cost": 0.00035535,
+   "seconds": 0.83,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-annotated-message-1",
+   "condition": "stack",
+   "chosen": "everything/get-annotated-message",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7537,
+   "completion_tokens": 17,
+   "cost": 0.0011331,
+   "seconds": 0.47,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-env-1",
+   "condition": "solo",
+   "chosen": "everything/get-env",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2372,
+   "completion_tokens": 9,
+   "cost": 0.00035715,
+   "seconds": 0.99,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-env-1",
+   "condition": "stack",
+   "chosen": "everything/get-env",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7563,
+   "completion_tokens": 9,
+   "cost": 0.0011358,
+   "seconds": 0.4,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-header-params-1",
+   "condition": "solo",
+   "chosen": "everything/get-header-params",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2361,
+   "completion_tokens": 20,
+   "cost": 0.00035715,
+   "seconds": 0.5,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-header-params-1",
+   "condition": "stack",
+   "chosen": "everything/get-header-params",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7552,
+   "completion_tokens": 20,
+   "cost": 0.0011358,
+   "seconds": 0.79,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-resource-links-1",
+   "condition": "solo",
+   "chosen": "everything/get-resource-links",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2342,
+   "completion_tokens": 15,
+   "cost": 0.00035355,
+   "seconds": 0.47,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-resource-links-1",
+   "condition": "stack",
+   "chosen": "everything/get-resource-links",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7533,
+   "completion_tokens": 15,
+   "cost": 0.0011322,
+   "seconds": 0.56,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-resource-reference-1",
+   "condition": "solo",
+   "chosen": "everything/get-resource-reference",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2355,
+   "completion_tokens": 24,
+   "cost": 0.00035685,
+   "seconds": 0.59,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-resource-reference-1",
+   "condition": "stack",
+   "chosen": "everything/get-resource-reference",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7546,
+   "completion_tokens": 17,
+   "cost": 0.00113445,
+   "seconds": 0.68,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-structured-content-1",
+   "condition": "solo",
+   "chosen": "everything/get-structured-content",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2346,
+   "completion_tokens": 14,
+   "cost": 0.000354,
+   "seconds": 0.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-structured-content-1",
+   "condition": "stack",
+   "chosen": "everything/get-structured-content",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7537,
+   "completion_tokens": 14,
+   "cost": 0.00113265,
+   "seconds": 0.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-sum-1",
+   "condition": "solo",
+   "chosen": "everything/get-sum",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2352,
+   "completion_tokens": 27,
+   "cost": 0.00035685,
+   "seconds": 2.39,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-sum-1",
+   "condition": "stack",
+   "chosen": "everything/get-sum",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7543,
+   "completion_tokens": 27,
+   "cost": 0.0011355,
+   "seconds": 0.72,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-tiny-image-1",
+   "condition": "solo",
+   "chosen": "everything/get-tiny-image",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2345,
+   "completion_tokens": 10,
+   "cost": 0.00035325,
+   "seconds": 0.42,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-get-tiny-image-1",
+   "condition": "stack",
+   "chosen": "everything/get-tiny-image",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7536,
+   "completion_tokens": 10,
+   "cost": 0.0011319,
+   "seconds": 0.64,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-gzip-file-as-resource-1",
+   "condition": "solo",
+   "chosen": "everything/gzip-file-as-resource",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2369,
+   "completion_tokens": 51,
+   "cost": 0.000363,
+   "seconds": 1.07,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-gzip-file-as-resource-1",
+   "condition": "stack",
+   "chosen": "everything/gzip-file-as-resource",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7560,
+   "completion_tokens": 51,
+   "cost": 0.00114165,
+   "seconds": 1.07,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-list-changed-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-list-changed",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2341,
+   "completion_tokens": 16,
+   "cost": 0.00035355,
+   "seconds": 0.47,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-list-changed-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-list-changed",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7532,
+   "completion_tokens": 16,
+   "cost": 0.0011322,
+   "seconds": 0.45,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-log-messages-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-log-messages",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2349,
+   "completion_tokens": 10,
+   "cost": 0.00035385,
+   "seconds": 0.39,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-log-messages-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-log-messages",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7540,
+   "completion_tokens": 10,
+   "cost": 0.0011325,
+   "seconds": 0.38,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-long-running-operation-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-long-running-operation",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2367,
+   "completion_tokens": 22,
+   "cost": 0.00035835,
+   "seconds": 0.53,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-long-running-operation-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-long-running-operation",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7558,
+   "completion_tokens": 22,
+   "cost": 0.001137,
+   "seconds": 1.59,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-resource-update-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-resource-update",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2364,
+   "completion_tokens": 24,
+   "cost": 0.0003582,
+   "seconds": 0.6,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-trigger-resource-update-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-resource-update",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7555,
+   "completion_tokens": 24,
+   "cost": 0.00113685,
+   "seconds": 2.65,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-toggle-simulated-logging-1",
+   "condition": "solo",
+   "chosen": "everything/toggle-simulated-logging",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2360,
+   "completion_tokens": 12,
+   "cost": 0.0003558,
+   "seconds": 0.42,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-toggle-simulated-logging-1",
+   "condition": "stack",
+   "chosen": "everything/toggle-simulated-logging",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7551,
+   "completion_tokens": 12,
+   "cost": 0.00113445,
+   "seconds": 0.43,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-toggle-subscriber-updates-1",
+   "condition": "solo",
+   "chosen": "everything/toggle-subscriber-updates",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2363,
+   "completion_tokens": 11,
+   "cost": 0.0003561,
+   "seconds": 1.15,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "everything-toggle-subscriber-updates-1",
+   "condition": "stack",
+   "chosen": "everything/toggle-subscriber-updates",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7554,
+   "completion_tokens": 11,
+   "cost": 0.00113475,
+   "seconds": 0.71,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "thinking-sequentialthinking-1",
+   "condition": "solo",
+   "chosen": "thinking/sequentialthinking",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1130,
+   "completion_tokens": 494,
+   "cost": 0.0002436,
+   "seconds": 7.63,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "thinking-sequentialthinking-1",
+   "condition": "stack",
+   "chosen": "thinking/sequentialthinking",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7582,
+   "completion_tokens": 281,
+   "cost": 0.00117945,
+   "seconds": 4.51,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "time-get_current_time-1",
+   "condition": "solo",
+   "chosen": "time/get_current_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 401,
+   "completion_tokens": 18,
+   "cost": 6.285e-05,
+   "seconds": 0.5,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "time-get_current_time-1",
+   "condition": "stack",
+   "chosen": "time/get_current_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7531,
+   "completion_tokens": 18,
+   "cost": 0.00113235,
+   "seconds": 1.09,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "time-convert_time-1",
+   "condition": "solo",
+   "chosen": "time/convert_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 412,
+   "completion_tokens": 39,
+   "cost": 6.765e-05,
+   "seconds": 4.94,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "time-convert_time-1",
+   "condition": "stack",
+   "chosen": "time/convert_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7542,
+   "completion_tokens": 39,
+   "cost": 0.00113715,
+   "seconds": 1.56,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "fetch-fetch-1",
+   "condition": "solo",
+   "chosen": "fetch/fetch",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 384,
+   "completion_tokens": 31,
+   "cost": 6.225e-05,
+   "seconds": 0.78,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-8b-latest",
+   "intent_id": "fetch-fetch-1",
+   "condition": "stack",
+   "chosen": "fetch/fetch",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7568,
+   "completion_tokens": 31,
+   "cost": 0.00113985,
+   "seconds": 1.17,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2261,
+   "completion_tokens": 26,
+   "cost": 0.0004574,
+   "seconds": 3.37,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7551,
+   "completion_tokens": 25,
+   "cost": 0.0015152,
+   "seconds": 3.02,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_text_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2262,
+   "completion_tokens": 26,
+   "cost": 0.0004576,
+   "seconds": 3.42,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_text_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_text_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7552,
+   "completion_tokens": 26,
+   "cost": 0.0015156,
+   "seconds": 7.48,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_media_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_media_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2276,
+   "completion_tokens": 23,
+   "cost": 0.0004598,
+   "seconds": 1.12,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_media_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_media_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7566,
+   "completion_tokens": 23,
+   "cost": 0.0015178,
+   "seconds": 3.01,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_multiple_files-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_multiple_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2281,
+   "completion_tokens": 39,
+   "cost": 0.000464,
+   "seconds": 1.28,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-read_multiple_files-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_multiple_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7571,
+   "completion_tokens": 39,
+   "cost": 0.001522,
+   "seconds": 4.41,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-write_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/create_directory",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2266,
+   "completion_tokens": 14,
+   "cost": 0.000456,
+   "seconds": 1.27,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-write_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/create_directory",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7556,
+   "completion_tokens": 14,
+   "cost": 0.001514,
+   "seconds": 11.3,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-edit_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/read_text_file",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2284,
+   "completion_tokens": 18,
+   "cost": 0.0004604,
+   "seconds": 1.58,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-edit_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/read_text_file",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7574,
+   "completion_tokens": 18,
+   "cost": 0.0015184,
+   "seconds": 0.99,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-create_directory-1",
+   "condition": "solo",
+   "chosen": "filesystem/create_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2281,
+   "completion_tokens": 51,
+   "cost": 0.0004664,
+   "seconds": 5.62,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-create_directory-1",
+   "condition": "stack",
+   "chosen": "filesystem/create_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7571,
+   "completion_tokens": 51,
+   "cost": 0.0015244,
+   "seconds": 6.92,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_directory-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2245,
+   "completion_tokens": 16,
+   "cost": 0.0004522,
+   "seconds": 1.36,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_directory-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_directory",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7535,
+   "completion_tokens": 16,
+   "cost": 0.0015102,
+   "seconds": 1.93,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_directory_with_sizes-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 2265,
+   "completion_tokens": 13,
+   "cost": 0.0004556,
+   "seconds": 40.96,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_directory_with_sizes-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7555,
+   "completion_tokens": 13,
+   "cost": 0.0015136,
+   "seconds": 6.18,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-directory_tree-1",
+   "condition": "solo",
+   "chosen": "filesystem/directory_tree",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2279,
+   "completion_tokens": 22,
+   "cost": 0.0004602,
+   "seconds": 1.31,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-directory_tree-1",
+   "condition": "stack",
+   "chosen": "filesystem/directory_tree",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7569,
+   "completion_tokens": 22,
+   "cost": 0.0015182,
+   "seconds": 1.74,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-move_file-1",
+   "condition": "solo",
+   "chosen": "filesystem/move_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2269,
+   "completion_tokens": 54,
+   "cost": 0.0004646,
+   "seconds": 2.17,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-move_file-1",
+   "condition": "stack",
+   "chosen": "filesystem/move_file",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7559,
+   "completion_tokens": 54,
+   "cost": 0.0015226,
+   "seconds": 5.48,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-search_files-1",
+   "condition": "solo",
+   "chosen": "filesystem/search_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2260,
+   "completion_tokens": 52,
+   "cost": 0.0004624,
+   "seconds": 4.4,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-search_files-1",
+   "condition": "stack",
+   "chosen": "filesystem/search_files",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7550,
+   "completion_tokens": 63,
+   "cost": 0.0015226,
+   "seconds": 2.46,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-get_file_info-1",
+   "condition": "solo",
+   "chosen": "filesystem/get_file_info",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2259,
+   "completion_tokens": 21,
+   "cost": 0.000456,
+   "seconds": 8.46,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-get_file_info-1",
+   "condition": "stack",
+   "chosen": "filesystem/get_file_info",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7549,
+   "completion_tokens": 21,
+   "cost": 0.001514,
+   "seconds": 2.7,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_allowed_directories-1",
+   "condition": "solo",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2252,
+   "completion_tokens": 13,
+   "cost": 0.000453,
+   "seconds": 6.23,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "filesystem-list_allowed_directories-1",
+   "condition": "stack",
+   "chosen": "filesystem/list_allowed_directories",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7542,
+   "completion_tokens": 13,
+   "cost": 0.001511,
+   "seconds": 2.29,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-create_entities-1",
+   "condition": "solo",
+   "chosen": "memory/create_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1482,
+   "completion_tokens": 101,
+   "cost": 0.0003166,
+   "seconds": 9.79,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-create_entities-1",
+   "condition": "stack",
+   "chosen": "memory/create_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7620,
+   "completion_tokens": 101,
+   "cost": 0.0015442,
+   "seconds": 7.54,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-create_relations-1",
+   "condition": "solo",
+   "chosen": "memory/create_entities",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 1432,
+   "completion_tokens": 274,
+   "cost": 0.0003412,
+   "seconds": 7.73,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-create_relations-1",
+   "condition": "stack",
+   "chosen": "memory/create_entities",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7570,
+   "completion_tokens": 212,
+   "cost": 0.0015564,
+   "seconds": 17.05,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-add_observations-1",
+   "condition": "solo",
+   "chosen": "memory/add_observations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1440,
+   "completion_tokens": 55,
+   "cost": 0.000299,
+   "seconds": 2.79,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-add_observations-1",
+   "condition": "stack",
+   "chosen": "memory/add_observations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7578,
+   "completion_tokens": 55,
+   "cost": 0.0015266,
+   "seconds": 3.02,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_entities-1",
+   "condition": "solo",
+   "chosen": "memory/delete_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1438,
+   "completion_tokens": 123,
+   "cost": 0.0003122,
+   "seconds": 10.45,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_entities-1",
+   "condition": "stack",
+   "chosen": "memory/delete_entities",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7576,
+   "completion_tokens": 123,
+   "cost": 0.0015398,
+   "seconds": 9.83,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_observations-1",
+   "condition": "solo",
+   "chosen": "memory/delete_observations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1457,
+   "completion_tokens": 78,
+   "cost": 0.000307,
+   "seconds": 5.88,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_observations-1",
+   "condition": "stack",
+   "chosen": "memory/search_nodes",
+   "correct": false,
+   "args_valid": true,
+   "prompt_tokens": 7595,
+   "completion_tokens": 57,
+   "cost": 0.0015304,
+   "seconds": 1.74,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_relations-1",
+   "condition": "solo",
+   "chosen": "memory/delete_relations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1435,
+   "completion_tokens": 58,
+   "cost": 0.0002986,
+   "seconds": 7.05,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-delete_relations-1",
+   "condition": "stack",
+   "chosen": "memory/delete_relations",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7573,
+   "completion_tokens": 58,
+   "cost": 0.0015262,
+   "seconds": 5.76,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-read_graph-1",
+   "condition": "solo",
+   "chosen": "memory/read_graph",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1406,
+   "completion_tokens": 8,
+   "cost": 0.0002828,
+   "seconds": 1.76,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-read_graph-1",
+   "condition": "stack",
+   "chosen": "memory/read_graph",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7544,
+   "completion_tokens": 8,
+   "cost": 0.0015104,
+   "seconds": 20.8,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-search_nodes-1",
+   "condition": "solo",
+   "chosen": "memory/search_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1422,
+   "completion_tokens": 26,
+   "cost": 0.0002896,
+   "seconds": 1.64,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-search_nodes-1",
+   "condition": "stack",
+   "chosen": "memory/search_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7560,
+   "completion_tokens": 28,
+   "cost": 0.0015176,
+   "seconds": 7.33,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-open_nodes-1",
+   "condition": "solo",
+   "chosen": "memory/open_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1424,
+   "completion_tokens": 27,
+   "cost": 0.0002902,
+   "seconds": 1.89,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "memory-open_nodes-1",
+   "condition": "stack",
+   "chosen": "memory/open_nodes",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7562,
+   "completion_tokens": 27,
+   "cost": 0.0015178,
+   "seconds": 4.37,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-echo-1",
+   "condition": "solo",
+   "chosen": "everything/echo",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2391,
+   "completion_tokens": 59,
+   "cost": 0.00049,
+   "seconds": 6.95,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-echo-1",
+   "condition": "stack",
+   "chosen": "everything/echo",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7582,
+   "completion_tokens": 60,
+   "cost": 0.0015284,
+   "seconds": 5.76,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-annotated-message-1",
+   "condition": "solo",
+   "chosen": "everything/get-annotated-message",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2346,
+   "completion_tokens": 17,
+   "cost": 0.0004726,
+   "seconds": 1.19,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-annotated-message-1",
+   "condition": "stack",
+   "chosen": "everything/get-annotated-message",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7537,
+   "completion_tokens": 17,
+   "cost": 0.0015108,
+   "seconds": 11.58,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-env-1",
+   "condition": "solo",
+   "chosen": "everything/get-env",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2372,
+   "completion_tokens": 9,
+   "cost": 0.0004762,
+   "seconds": 1.81,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-env-1",
+   "condition": "stack",
+   "chosen": "everything/get-env",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7563,
+   "completion_tokens": 9,
+   "cost": 0.0015144,
+   "seconds": 5.53,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-header-params-1",
+   "condition": "solo",
+   "chosen": "everything/get-header-params",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2361,
+   "completion_tokens": 26,
+   "cost": 0.0004774,
+   "seconds": 2.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-header-params-1",
+   "condition": "stack",
+   "chosen": "everything/get-header-params",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7552,
+   "completion_tokens": 20,
+   "cost": 0.0015144,
+   "seconds": 6.22,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-resource-links-1",
+   "condition": "solo",
+   "chosen": "everything/get-resource-links",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2342,
+   "completion_tokens": 15,
+   "cost": 0.0004714,
+   "seconds": 7.03,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-resource-links-1",
+   "condition": "stack",
+   "chosen": "everything/get-resource-links",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7533,
+   "completion_tokens": 15,
+   "cost": 0.0015096,
+   "seconds": 2.23,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-resource-reference-1",
+   "condition": "solo",
+   "chosen": "everything/get-resource-reference",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2355,
+   "completion_tokens": 24,
+   "cost": 0.0004758,
+   "seconds": 2.52,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-resource-reference-1",
+   "condition": "stack",
+   "chosen": "everything/get-resource-reference",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7546,
+   "completion_tokens": 24,
+   "cost": 0.001514,
+   "seconds": 3.99,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-structured-content-1",
+   "condition": "solo",
+   "chosen": "everything/get-structured-content",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2346,
+   "completion_tokens": 14,
+   "cost": 0.000472,
+   "seconds": 2.43,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-structured-content-1",
+   "condition": "stack",
+   "chosen": "everything/get-structured-content",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7537,
+   "completion_tokens": 14,
+   "cost": 0.0015102,
+   "seconds": 1.85,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-sum-1",
+   "condition": "solo",
+   "chosen": "everything/get-sum",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2352,
+   "completion_tokens": 26,
+   "cost": 0.0004756,
+   "seconds": 1.47,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-sum-1",
+   "condition": "stack",
+   "chosen": "everything/get-sum",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7543,
+   "completion_tokens": 26,
+   "cost": 0.0015138,
+   "seconds": 25.4,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-tiny-image-1",
+   "condition": "solo",
+   "chosen": "everything/get-tiny-image",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2345,
+   "completion_tokens": 10,
+   "cost": 0.000471,
+   "seconds": 10.18,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-get-tiny-image-1",
+   "condition": "stack",
+   "chosen": "everything/get-tiny-image",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7536,
+   "completion_tokens": 10,
+   "cost": 0.0015092,
+   "seconds": 2.12,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-gzip-file-as-resource-1",
+   "condition": "solo",
+   "chosen": "everything/gzip-file-as-resource",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2369,
+   "completion_tokens": 51,
+   "cost": 0.000484,
+   "seconds": 2.71,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-gzip-file-as-resource-1",
+   "condition": "stack",
+   "chosen": "everything/gzip-file-as-resource",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7560,
+   "completion_tokens": 39,
+   "cost": 0.0015198,
+   "seconds": 4.84,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-list-changed-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-list-changed",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2341,
+   "completion_tokens": 16,
+   "cost": 0.0004714,
+   "seconds": 1.18,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-list-changed-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-list-changed",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7532,
+   "completion_tokens": 16,
+   "cost": 0.0015096,
+   "seconds": 48.07,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-log-messages-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-log-messages",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2349,
+   "completion_tokens": 10,
+   "cost": 0.0004718,
+   "seconds": 1.85,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-log-messages-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-log-messages",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7540,
+   "completion_tokens": 10,
+   "cost": 0.00151,
+   "seconds": 3.15,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-long-running-operation-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-long-running-operation",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2367,
+   "completion_tokens": 22,
+   "cost": 0.0004778,
+   "seconds": 3.32,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-long-running-operation-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-long-running-operation",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7558,
+   "completion_tokens": 22,
+   "cost": 0.001516,
+   "seconds": 3.17,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-resource-update-1",
+   "condition": "solo",
+   "chosen": "everything/trigger-resource-update",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2364,
+   "completion_tokens": 24,
+   "cost": 0.0004776,
+   "seconds": 2.35,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-trigger-resource-update-1",
+   "condition": "stack",
+   "chosen": "everything/trigger-resource-update",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7555,
+   "completion_tokens": 24,
+   "cost": 0.0015158,
+   "seconds": 2.63,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-toggle-simulated-logging-1",
+   "condition": "solo",
+   "chosen": "everything/toggle-simulated-logging",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2360,
+   "completion_tokens": 12,
+   "cost": 0.0004744,
+   "seconds": 2.34,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-toggle-simulated-logging-1",
+   "condition": "stack",
+   "chosen": "everything/toggle-simulated-logging",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7551,
+   "completion_tokens": 12,
+   "cost": 0.0015126,
+   "seconds": 10.84,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-toggle-subscriber-updates-1",
+   "condition": "solo",
+   "chosen": "everything/toggle-subscriber-updates",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 2363,
+   "completion_tokens": 11,
+   "cost": 0.0004748,
+   "seconds": 10.49,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "everything-toggle-subscriber-updates-1",
+   "condition": "stack",
+   "chosen": "?:everything__trigger-subscriber-updates",
+   "correct": false,
+   "args_valid": null,
+   "prompt_tokens": 7554,
+   "completion_tokens": 11,
+   "cost": 0.001513,
+   "seconds": 1.65,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "thinking-sequentialthinking-1",
+   "condition": "solo",
+   "chosen": "thinking/sequentialthinking",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 1130,
+   "completion_tokens": 945,
+   "cost": 0.000415,
+   "seconds": 59.55,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "thinking-sequentialthinking-1",
+   "condition": "stack",
+   "chosen": "thinking/sequentialthinking",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7582,
+   "completion_tokens": 97,
+   "cost": 0.0015358,
+   "seconds": 3.46,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "time-get_current_time-1",
+   "condition": "solo",
+   "chosen": "time/get_current_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 401,
+   "completion_tokens": 18,
+   "cost": 8.38e-05,
+   "seconds": 1.09,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "time-get_current_time-1",
+   "condition": "stack",
+   "chosen": "time/get_current_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7531,
+   "completion_tokens": 18,
+   "cost": 0.0015098,
+   "seconds": 12.75,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "time-convert_time-1",
+   "condition": "solo",
+   "chosen": "time/convert_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 412,
+   "completion_tokens": 39,
+   "cost": 9.02e-05,
+   "seconds": 2.97,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "time-convert_time-1",
+   "condition": "stack",
+   "chosen": "time/convert_time",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7542,
+   "completion_tokens": 39,
+   "cost": 0.0015162,
+   "seconds": 3.37,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "fetch-fetch-1",
+   "condition": "solo",
+   "chosen": "fetch/fetch",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 384,
+   "completion_tokens": 38,
+   "cost": 8.44e-05,
+   "seconds": 2.12,
+   "error": null
+  },
+  {
+   "model": "mistral:ministral-14b-latest",
+   "intent_id": "fetch-fetch-1",
+   "condition": "stack",
+   "chosen": "fetch/fetch",
+   "correct": true,
+   "args_valid": true,
+   "prompt_tokens": 7568,
+   "completion_tokens": 31,
+   "cost": 0.0015198,
+   "seconds": 2.96,
+   "error": null
+  }
+ ],
+ "settings": {
+  "turns_per_day": 100,
+  "max_cost": 0.0001
+ },
+ "spend": {},
+ "stopped": null
+}

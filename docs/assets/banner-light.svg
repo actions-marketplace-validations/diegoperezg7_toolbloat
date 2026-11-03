@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="140" viewBox="0 0 880 140" role="img" aria-label="toolbloat">
+  <g transform="translate(8 22) scale(4)">
+    <rect x="1" y="1" width="22" height="22" rx="6" fill="#8f3bb3"/>
+    <path d="M9.6 4.8v3.2M14.4 4.8v3.2M7.6 8h8.8v2.6a4.4 4.4 0 0 1-8.8 0zM12 15v4.4" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="124" y="78" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-1.5" fill="#111116">toolbloat</text>
+  <text x="126" y="112" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="19" fill="#5c5d66">Token cost and tool-selection accuracy of your MCP stack</text>
+</svg>

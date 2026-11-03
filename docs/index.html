@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>toolbloat report</title>
+<meta name="description" content="Token cost and tool-selection accuracy of an MCP server stack, measured by toolbloat.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='6' fill='%238f3bb3'/%3E%3Cpath d='M9.6 4.8v3.2M14.4 4.8v3.2M7.6 8h8.8v2.6a4.4 4.4 0 0 1-8.8 0zM12 15v4.4' fill='none' stroke='%23fff' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #ffffff; --surface: #ffffff; --sunken: #f6f6f9; --fg: #111116; --muted: #5c5d66; --border: #e4e4e9;
+  --shadow: 0 1px 2px rgba(17,17,22,.05), 0 6px 20px rgba(17,17,22,.06);
+  --accent: #8f3bb3; --tile: #8f3bb3; --tile-fg: #ffffff;
+  --ok: #11813c; --warn: #a45e00; --err: #c22826;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #0d0d10; --sunken: #0d0d10; --fg: #f4f5f8; --muted: #a3a4ae; --border: #28282e;
+    --shadow: 0 0 0 1px rgba(255,255,255,.02), 0 10px 30px rgba(0,0,0,.7);
+    --accent: #ce92ec; --ok: #5fd37f; --warn: #f7b83d; --err: #f66d67; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #0d0d10; --sunken: #0d0d10; --fg: #f4f5f8; --muted: #a3a4ae; --border: #28282e;
+  --shadow: 0 0 0 1px rgba(255,255,255,.02), 0 10px 30px rgba(0,0,0,.7);
+  --accent: #ce92ec; --ok: #5fd37f; --warn: #f7b83d; --err: #f66d67; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 16px 64px; }
+a { color: var(--accent); }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+header.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--fg); }
+.brand svg { width: 32px; height: 32px; }
+.brand b { font-size: 20px; letter-spacing: -.01em; }
+.brand span { color: var(--muted); font-weight: 500; }
+.toggles { display: flex; gap: 8px; }
+.toggles button { font: inherit; font-size: 13px; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; min-height: 34px; }
+.toggles button:hover { border-color: var(--accent); }
+h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.15; letter-spacing: -.02em; margin: 28px 0 8px; }
+h2 { font-size: 19px; margin: 0 0 4px; letter-spacing: -.01em; }
+.lead { color: var(--muted); max-width: 760px; margin: 0 0 16px; }
+.recorded { display: inline-flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); border-radius: 10px; padding: 8px 12px; font-size: 13px; color: var(--muted); }
+.recorded b { color: var(--fg); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 8px; }
+.kpi, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+.kpi { padding: 14px 16px; }
+.kpi .v { font-family: var(--font-mono); font-size: 26px; font-weight: 500; letter-spacing: -.02em; }
+.kpi .l { font-size: 13px; color: var(--muted); }
+.kpi .v small { font-size: 14px; color: var(--muted); }
+.card { padding: 18px; margin-top: 18px; }
+.card > p.muted { margin: 0 0 14px; font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid2 > .card { margin-top: 0; min-width: 0; }
+.card { min-width: 0; }
+td.mono { overflow-wrap: anywhere; }
+.acc td.model { white-space: nowrap; overflow-wrap: normal; }
+.grid2.wide { grid-template-columns: 3fr 2fr; }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 96px 1fr 104px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .track { height: 12px; background: var(--sunken); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.bar .n { text-align: right; font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
+.bar .n small { color: var(--muted); font-size: 12px; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+td.r, th.r { text-align: right; }
+td.num { white-space: nowrap; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.down { color: var(--err); } .up { color: var(--ok); } .flat { color: var(--muted); }
+.dumb { position: relative; height: 18px; min-width: 100px; }
+.acc th, .acc td { padding: 8px 7px; }
+.acc td.model { font-size: 13px; }
+.acc td.model small { display: block; color: var(--muted); font-size: 11px; }
+.dumb .line { position: absolute; top: 8px; height: 2px; background: var(--border); }
+.dumb .dot { position: absolute; top: 3px; width: 12px; height: 12px; border-radius: 50%; margin-left: -6px; }
+.dumb .solo { background: var(--surface); border: 2px solid var(--muted); }
+.dumb .stack { background: var(--accent); }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin: 0 0 10px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.matrix { width: auto; }
+.matrix td, .matrix th { text-align: center; padding: 6px 8px; font-family: var(--font-mono); font-size: 13px; }
+.matrix th.rowh, .matrix td.rowh { text-align: left; font-family: var(--font-sans); font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--fg); font-weight: 500; }
+.matrix td.cell { border: 1px solid var(--border); min-width: 46px; }
+.matrix td.hit { background: color-mix(in srgb, var(--ok) calc(var(--a) * 100%), transparent); }
+.matrix td.miss { background: color-mix(in srgb, var(--err) calc(var(--a) * 100%), transparent); }
+.matrix td.zero { color: var(--muted); }
+select { font: inherit; font-size: 14px; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
+.ok { color: var(--ok); } .bad { color: var(--err); } .warn { color: var(--warn); }
+ul.never { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+ul.never li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+details summary { cursor: pointer; font-weight: 600; }
+.intents td.t { min-width: 240px; }
+.mark { font-family: var(--font-mono); font-size: 13px; }
+.note { font-size: 14px; color: var(--muted); }
+.note li { margin-bottom: 6px; }
+code { font-family: var(--font-mono); font-size: 13px; background: var(--sunken); border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; overflow-wrap: anywhere; }
+footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hidden { display: none; }
+@media (max-width: 860px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid2, .grid2.wide { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .kpi .v { font-size: 21px; }
+  .bar { grid-template-columns: 80px 1fr 92px; font-size: 13px; }
+  .card { padding: 14px; }
+  th, td { padding: 7px 6px; }
+  td.mono, .mono { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-tool" viewBox="0 0 24 24">
+      <rect x="1" y="1" width="22" height="22" rx="6" fill="var(--tile)"/>
+      <path d="M9.6 4.8v3.2M14.4 4.8v3.2M7.6 8h8.8v2.6a4.4 4.4 0 0 1-8.8 0zM12 15v4.4" fill="none" stroke="var(--tile-fg)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="https://github.com/diegoperezg7/toolbloat"><svg aria-hidden="true"><use href="#g-tool"/></svg><b>toolbloat</b><span data-i18n="report">report</span></a>
+  <div class="toggles">
+    <button type="button" id="lang" aria-label="Language">ES</button>
+    <button type="button" id="theme" aria-label="Theme" data-i18n="theme">Theme</button>
+  </div>
+</header>
+
+<h1 data-i18n="title">What your MCP stack costs, and where models pick the wrong tool</h1>
+<p class="lead" data-i18n="lead">Tool definitions are sent to the model on every turn. toolbloat counts them, then asks each model which tool it would call for realistic requests, first with only the right server loaded and then with every server loaded. No tool is ever executed.</p>
+<div class="recorded">
+<span class="chip" style="color:var(--accent)" data-i18n="recordedChip">Recorded run</span>  <span><span data-i18n="date">Date</span> <b>2026-11-03</b></span>
+  <span>toolbloat <b>0.1.0</b></span>
+  <span><span data-i18n="models">Models</span> <b>mistral:ministral-8b-latest, mistral:ministral-14b-latest</b></span>
+  <span><span data-i18n="hardware">Hardware</span> <b>Apple M4, 16 GB RAM, macOS 27.2</b></span>
+</div>
+
+<section class="kpis">
+  <div class="kpi"><div class="v">6,064</div><div class="l" data-i18n="kTokens">tokens of tool definitions on every turn (approx.)</div></div>
+  <div class="kpi"><div class="v">43 <small>/ 6</small></div><div class="l" data-i18n="kTools">tools / servers in the stack</div></div>
+  <div class="kpi"><div class="v">18.2M</div><div class="l"><span data-i18n="kMonthly">tokens per month at</span> 100 <span data-i18n="kTurns">turns/day</span></div></div>
+  <div class="kpi"><div class="v down">-14 <small data-i18n="pts">pts</small></div><div class="l"><span data-i18n="kWorst">largest accuracy change when stacked</span> · <span class="mono">mistral:ministral-8b-latest</span></div></div>
+</section>
+
+
+<div class="grid2" style="margin-top:18px">
+<section class="card">
+  <h2 data-i18n="perServer">Tokens per server</h2>
+  <p class="muted" data-i18n="perServerSub">Each tool counted as name, description and JSON Schema with tiktoken o200k. Providers use their own tokenizers, so treat these as approximate.</p>
+  <div class="bars">
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-everything@2.1.0">everything</span><div class="track"><div class="fill" style="width: 100.0%"></div></div><span class="n">1,825 <small>· 16</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-filesystem@2.1.0 .">filesystem</span><div class="track"><div class="fill" style="width: 99.0%"></div></div><span class="n">1,806 <small>· 14</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-memory@2.0.1">memory</span><div class="track"><div class="fill" style="width: 57.3%"></div></div><span class="n">1,045 <small>· 9</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-sequential-thinking@2.0.0">thinking</span><div class="track"><div class="fill" style="width: 47.8%"></div></div><span class="n">873 <small>· 1</small></span></div>
+    <div class="bar"><span title="uvx mcp-server-time==2026.10.28">time</span><div class="track"><div class="fill" style="width: 15.4%"></div></div><span class="n">281 <small>· 2</small></span></div>
+    <div class="bar"><span title="uvx mcp-server-fetch==2026.10.28">fetch</span><div class="track"><div class="fill" style="width: 12.8%"></div></div><span class="n">234 <small>· 1</small></span></div>
+  </div>
+</section>
+<section class="card">
+  <h2 data-i18n="heaviest">Heaviest tools</h2>
+  <p class="muted" data-i18n="heaviestSub">The ten tool definitions that cost the most tokens.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th data-i18n="tool">Tool</th><th class="r" data-i18n="tokens">Tokens</th></tr></thead>
+    <tbody><tr><td class="mono">thinking/<wbr>sequentialthinking</td><td class="r num">873</td></tr><tr><td class="mono">everything/<wbr>gzip-file-as-resource</td><td class="r num">252</td></tr><tr><td class="mono">fetch/<wbr>fetch</td><td class="r num">234</td></tr><tr><td class="mono">filesystem/<wbr>read_text_file</td><td class="r num">196</td></tr><tr><td class="mono">memory/<wbr>create_entities</td><td class="r num">190</td></tr><tr><td class="mono">everything/<wbr>get-header-params</td><td class="r num">187</td></tr><tr><td class="mono">time/<wbr>convert_time</td><td class="r num">186</td></tr><tr><td class="mono">filesystem/<wbr>edit_file</td><td class="r num">173</td></tr><tr><td class="mono">filesystem/<wbr>search_files</td><td class="r num">159</td></tr><tr><td class="mono">filesystem/<wbr>read_multiple_files</td><td class="r num">150</td></tr></tbody>
+  </table></div>
+</section>
+</div>
+
+<section class="card">
+  <h2 data-i18n="accuracy">Tool selection accuracy: alone vs. stacked</h2>
+  <p class="muted"><span data-i18n="accuracySub">Share of requests where the model called the expected tool. "Alone" loads only that tool's server; "stacked" loads all</span> 6 <span data-i18n="servers">servers</span> (43 <span data-i18n="toolsShort">tools</span>), 43 <span data-i18n="requests">requests</span>.</p>
+  <div class="legend"><span><i style="border:2px solid var(--muted);background:var(--surface)"></i><span data-i18n="alone">alone</span></span><span><i style="background:var(--accent)"></i><span data-i18n="stacked">stacked</span></span></div>
+  <div class="table-wrap"><table class="acc">
+    <thead><tr>
+      <th data-i18n="model">Model</th><th class="r" data-i18n="alone">Alone</th><th class="r" data-i18n="stacked">Stacked</th><th style="min-width:110px" aria-label="0-100%"></th>
+      <th class="r" data-i18n="change">Change</th><th class="r" data-i18n="broken">Broken by stacking</th><th class="r" data-i18n="rightServer">Right server</th>
+      <th class="r" data-i18n="validArgs">Valid args</th><th class="r" data-i18n="noCall">No call</th><th class="r" data-i18n="billed">Billed tokens</th><th class="r" data-i18n="perMonth">$ / month</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono model"><small>mistral</small>ministral-8b-latest</td>
+        <td class="r num">86%</td>
+        <td class="r num">72%</td>
+        <td>          <div class="dumb" aria-hidden="true"><div class="line" style="left: 72.1%; width: 13.900000000000006%"></div><div class="dot solo" style="left: 86.0%"></div><div class="dot stack" style="left: 72.1%"></div></div>
+</td>
+        <td class="r num down">-14</td>
+        <td class="r num">6</td>
+        <td class="r num">98%</td>
+        <td class="r num">100%</td>
+        <td class="r num">0%</td>
+        <td class="r num">7,558</td>
+        <td class="r num">$2.73</td>
+      </tr>
+      <tr>
+        <td class="mono model"><small>mistral</small>ministral-14b-latest</td>
+        <td class="r num">91%</td>
+        <td class="r num">86%</td>
+        <td>          <div class="dumb" aria-hidden="true"><div class="line" style="left: 86.0%; width: 4.700000000000003%"></div><div class="dot solo" style="left: 90.7%"></div><div class="dot stack" style="left: 86.0%"></div></div>
+</td>
+        <td class="r num down">-5</td>
+        <td class="r num">2</td>
+        <td class="r num">98%</td>
+        <td class="r num">100%</td>
+        <td class="r num">0%</td>
+        <td class="r num">7,558</td>
+        <td class="r num">$3.64</td>
+      </tr>
+    </tbody>
+  </table></div>
+  <p class="note"><span data-i18n="accNote1">"Broken by stacking": requests the model answered correctly alone and wrongly with the whole stack. "Valid args": correct calls whose arguments validate against the tool's JSON Schema. "Billed tokens": average prompt tokens the provider reported for a stacked call. "$ / month": approximate definition tokens × list input price ×</span> 100 <span data-i18n="accNote2">turns/day × 30 days, without prompt caching.</span></p>
+</section>
+
+<section class="card">
+  <h2 data-i18n="confusion">Cross-server confusion (stacked)</h2>
+  <p class="muted" data-i18n="confusionSub">Rows: the server that owns the expected tool. Columns: the server of the tool the model actually called. Off-diagonal cells are picks from the wrong server.</p>
+  <p><label><span data-i18n="show">Show</span> <select id="mx">
+    <option value="all" data-i18n="allModels">All models</option>
+<option value="1">mistral:ministral-8b-latest</option><option value="2">mistral:ministral-14b-latest</option>  </select></label></p>
+    <div class="table-wrap mxv" data-mx="all"><table class="matrix">
+    <thead><tr><th class="rowh" data-i18n="expectedChosen">expected ↓ · chosen →</th><th>filesystem</th><th>memory</th><th>everything</th><th>thinking</th><th>time</th><th>fetch</th><th><span data-i18n="unknownCol">unknown</span></th></tr></thead>
+    <tbody><tr><td class="rowh">filesystem</td><td class="cell hit" style="--a: 0.66">28</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">memory</td><td class="cell miss" style="--a: 0.14">1</td><td class="cell hit" style="--a: 0.45">17</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">everything</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.72">31</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell miss" style="--a: 0.14">1</td></tr><tr><td class="rowh">thinking</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">2</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">time</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.2">4</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">fetch</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">2</td><td class="cell zero" style="--a: 0">0</td></tr></tbody>
+  </table></div>
+
+  <div class="table-wrap mxv hidden" data-mx="1"><table class="matrix">
+    <thead><tr><th class="rowh" data-i18n="expectedChosen">expected ↓ · chosen →</th><th>filesystem</th><th>memory</th><th>everything</th><th>thinking</th><th>time</th><th>fetch</th><th><span data-i18n="unknownCol">unknown</span></th></tr></thead>
+    <tbody><tr><td class="rowh">filesystem</td><td class="cell hit" style="--a: 0.65">14</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">memory</td><td class="cell miss" style="--a: 0.16">1</td><td class="cell hit" style="--a: 0.42">8</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">everything</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.72">16</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">thinking</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">1</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">time</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.2">2</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">fetch</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">1</td><td class="cell zero" style="--a: 0">0</td></tr></tbody>
+  </table></div>
+  <div class="table-wrap mxv hidden" data-mx="2"><table class="matrix">
+    <thead><tr><th class="rowh" data-i18n="expectedChosen">expected ↓ · chosen →</th><th>filesystem</th><th>memory</th><th>everything</th><th>thinking</th><th>time</th><th>fetch</th><th><span data-i18n="unknownCol">unknown</span></th></tr></thead>
+    <tbody><tr><td class="rowh">filesystem</td><td class="cell hit" style="--a: 0.68">14</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">memory</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.48">9</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">everything</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.72">15</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell miss" style="--a: 0.16">1</td></tr><tr><td class="rowh">thinking</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">1</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">time</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.2">2</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td></tr><tr><td class="rowh">fetch</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell zero" style="--a: 0">0</td><td class="cell hit" style="--a: 0.16">1</td><td class="cell zero" style="--a: 0">0</td></tr></tbody>
+  </table></div>
+</section>
+
+<div class="grid2 wide" style="margin-top:18px">
+<section class="card">
+  <h2 data-i18n="wrong">Most common wrong picks (stacked)</h2>
+  <p class="muted" data-i18n="wrongSub">Expected tool and what the model called instead, across all models.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th data-i18n="expected">Expected</th><th data-i18n="chosen">Chosen</th><th class="r">n</th></tr></thead>
+    <tbody><tr><td class="mono">filesystem/<wbr>write_file</td><td class="mono">filesystem/<wbr>create_directory</td><td class="r num" title="mistral:ministral-14b-latest, mistral:ministral-8b-latest">2</td></tr><tr><td class="mono">filesystem/<wbr>edit_file</td><td class="mono">filesystem/<wbr>read_text_file</td><td class="r num" title="mistral:ministral-14b-latest, mistral:ministral-8b-latest">2</td></tr><tr><td class="mono">filesystem/<wbr>list_directory_with_sizes</td><td class="mono">filesystem/<wbr>list_allowed_directories</td><td class="r num" title="mistral:ministral-14b-latest, mistral:ministral-8b-latest">2</td></tr><tr><td class="mono">memory/<wbr>create_relations</td><td class="mono">memory/<wbr>create_entities</td><td class="r num" title="mistral:ministral-14b-latest, mistral:ministral-8b-latest">2</td></tr><tr><td class="mono">memory/<wbr>delete_observations</td><td class="mono">memory/<wbr>search_nodes</td><td class="r num" title="mistral:ministral-14b-latest, mistral:ministral-8b-latest">2</td></tr><tr><td class="mono">filesystem/<wbr>read_file</td><td class="mono">filesystem/<wbr>list_allowed_directories</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">filesystem/<wbr>read_text_file</td><td class="mono">filesystem/<wbr>list_allowed_directories</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">filesystem/<wbr>read_media_file</td><td class="mono">filesystem/<wbr>search_files</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">filesystem/<wbr>move_file</td><td class="mono">filesystem/<wbr>list_allowed_directories</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">filesystem/<wbr>search_files</td><td class="mono">filesystem/<wbr>list_allowed_directories</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">memory/<wbr>add_observations</td><td class="mono">memory/<wbr>search_nodes</td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr><tr><td class="mono">memory/<wbr>delete_entities</td><td class="mono">filesystem/<wbr>search_files <span class="chip" style="color:var(--err)" data-i18n="otherServer">other server</span></td><td class="r num" title="mistral:ministral-8b-latest">1</td></tr></tbody>
+  </table></div>
+</section>
+<section class="card">
+  <h2 data-i18n="never">Tools no model chose (stacked)</h2>
+  <p class="muted"><span data-i18n="neverSub">Removing them would save about</span> <b class="mono">690</b> <span data-i18n="neverSub2">tokens per turn</span> (~2.1M <span data-i18n="perMonthShort">per month</span>). <span data-i18n="neverCaveat">Check before removing: a tool can be useful even if these requests did not reach it.</span></p>
+  <ul class="never"><li><span class="mono">filesystem/<wbr>edit_file</span><span class="num muted">173</span></li><li><span class="mono">memory/<wbr>create_relations</span><span class="num muted">145</span></li><li><span class="mono">filesystem/<wbr>list_directory_with_sizes</span><span class="num muted">140</span></li><li><span class="mono">memory/<wbr>delete_observations</span><span class="num muted">130</span></li><li><span class="mono">filesystem/<wbr>write_file</span><span class="num muted">102</span></li></ul>
+</section>
+</div>
+
+<section class="card">
+  <details>
+    <summary><span data-i18n="perIntent">Every request and every answer</span> (43)</summary>
+    <p class="muted" style="margin-top:10px" data-i18n="perIntentSub">✓ expected tool · ✗ another tool (hover to see which) · – no call or failed call. A = alone, S = stacked.</p>
+    <div class="table-wrap"><table class="intents">
+      <thead><tr><th data-i18n="request">Request</th><th data-i18n="expected">Expected</th><th class="r mono" title="mistral:ministral-8b-latest">ministral-8b-latest<br>A · S</th><th class="r mono" title="mistral:ministral-14b-latest">ministral-14b-latest<br>A · S</th></tr></thead>
+      <tbody><tr><td class="t">Can you show me the last 10 lines of the server logs from `/var/log/nginx/error.log` to see if there are any recent issues?</td><td class="mono">filesystem/read_file</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you show me the first 10 lines of the &#39;project_requirements.txt&#39; file located in the &#39;docs&#39; directory to confirm the latest dependencies?</td><td class="mono">filesystem/read_text_file</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you show me the base64-encoded version of the latest project logo in the `/designs/branding/` folder? It&#39;s called `logo_v2.png` and I need it for a quick email template.</td><td class="mono">filesystem/read_media_file</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="filesystem/search_files">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to compare the latest versions of three configuration files (`/config/app_settings_1.json`, `/config/app_settings_2.json`, and `/config/app_settings_3.json`) from our deployment directory—can you fetch all of them at once?</td><td class="mono">filesystem/read_multiple_files</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Create a new file called &#39;project_plan.txt&#39; in the &#39;docs&#39; folder with the latest project timeline and milestones I drafted, so I can share it with the team.</td><td class="mono">filesystem/write_file</td>
+<td class="r mark"><span class="bad" title="filesystem/create_directory">✗</span> · <span class="bad" title="filesystem/create_directory">✗</span></td><td class="r mark"><span class="bad" title="filesystem/create_directory">✗</span> · <span class="bad" title="filesystem/create_directory">✗</span></td>      </tr><tr><td class="t">I need to update the version number in the `project/version.txt` file from `1.2.3` to `1.2.4` and also add a new release note at the bottom of the file. Can you make those changes for me?</td><td class="mono">filesystem/edit_file</td>
+<td class="r mark"><span class="bad" title="filesystem/read_text_file">✗</span> · <span class="bad" title="filesystem/read_text_file">✗</span></td><td class="r mark"><span class="bad" title="filesystem/read_text_file">✗</span> · <span class="bad" title="filesystem/read_text_file">✗</span></td>      </tr><tr><td class="t">Could you create the necessary folders for my new project? I need a structure with `project_root/data/raw`, `project_root/data/processed`, and `project_root/notebooks`—make sure all parent directories exist, even if they’re empty.</td><td class="mono">filesystem/create_directory</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">What files and folders are directly inside the `projects/webapp` folder?</td><td class="mono">filesystem/list_directory</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Could you show me all the files and folders in my &#39;Documents&#39; directory, including their sizes, sorted by size so I can see what’s taking up the most space?</td><td class="mono">filesystem/list_directory_with_sizes</td>
+<td class="r mark"><span class="bad" title="filesystem/list_allowed_directories">✗</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td><td class="r mark"><span class="bad" title="filesystem/list_allowed_directories">✗</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td>      </tr><tr><td class="t">Can you show me a structured breakdown of all the files and folders inside the `/projects/2023/reports/` directory, including subdirectories? I need to visualize the hierarchy to understand the layout before I start working on it.</td><td class="mono">filesystem/directory_tree</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Could you move the file &#39;report_2023_q3.pdf&#39; from &#39;/documents/finance/quarterly&#39; to &#39;/documents/finance/archives&#39;?</td><td class="mono">filesystem/move_file</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you find all the `.md` files in the `docs` and `projects` directories, but exclude any in the `temp` folder?</td><td class="mono">filesystem/search_files</td>
+<td class="r mark"><span class="bad" title="filesystem/list_allowed_directories">✗</span> · <span class="bad" title="filesystem/list_allowed_directories">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you show me the size, last modified date, and permissions for the file `/projects/report_v2/data.csv` without opening it?</td><td class="mono">filesystem/get_file_info</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Which directories is this server allowed to access? I want to know where I can look before opening any files.</td><td class="mono">filesystem/list_allowed_directories</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to add several new locations to our system, including &#39;Central Park&#39; (type: Park) with observations like &#39;opened in 1857&#39;, &#39;area: 843 acres&#39;, and &#39;managed by NYC Parks&#39;, and &#39;Times Square&#39; (type: Landmark) with details such as &#39;famous for neon lights&#39;, &#39;annual visitor count: 40 million&#39;, and &#39;hosts NYE celebrations&#39;. Please create these entities and their observations at once.</td><td class="mono">memory/create_entities</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to establish that the company &#39;TechSolutions Inc.&#39; was acquired by &#39;GiantCorp&#39; in 2022, and also link &#39;Jane Doe&#39; as the CEO of &#39;TechSolutions Inc.&#39; before the acquisition.</td><td class="mono">memory/create_relations</td>
+<td class="r mark"><span class="bad" title="memory/create_entities">✗</span> · <span class="bad" title="memory/create_entities">✗</span></td><td class="r mark"><span class="bad" title="memory/create_entities">✗</span> · <span class="bad" title="memory/create_entities">✗</span></td>      </tr><tr><td class="t">I just found that the &#39;New York City Marathon 2023&#39; event had a record-breaking finish time of 2:01:39 set by Kelvin Kiptum, and I&#39;d like to add this detail to the event&#39;s existing records in our knowledge base.</td><td class="mono">memory/add_observations</td>
+<td class="r mark"><span class="bad" title="memory/open_nodes">✗</span> · <span class="bad" title="memory/search_nodes">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to remove all outdated product listings from our inventory system, specifically the items named &#39;Widget Pro 2023&#39;, &#39;SmartGadget X&#39;, and &#39;EcoBulb 3000&#39; along with any related connections to suppliers or categories.</td><td class="mono">memory/delete_entities</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="filesystem/search_files">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to remove the outdated inventory counts from the &#39;Warehouse_A&#39; entity, specifically the observations dated &#39;2023-10-15&#39; and &#39;2023-10-18&#39; where the stock levels were recorded as 150 units for Product_X and 85 units for Product_Y. Can you handle that?</td><td class="mono">memory/delete_observations</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="bad" title="memory/search_nodes">✗</span></td><td class="r mark"><span class="ok">✓</span> · <span class="bad" title="memory/search_nodes">✗</span></td>      </tr><tr><td class="t">I need to remove the &#39;manages&#39; relationship between the department &#39;Engineering&#39; and the project &#39;API Overhaul&#39;, as well as the &#39;depends_on&#39; link between &#39;Frontend&#39; and &#39;Backend&#39; services. Could you handle that for me?</td><td class="mono">memory/delete_relations</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Show me the complete list of all entities and their relationships in the knowledge graph, including all properties and connections between them.</td><td class="mono">memory/read_graph</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you find all entities related to the &#39;2023 Q3 financial performance review&#39; where the document mentions &#39;revenue growth&#39; and includes the term &#39;North America&#39; in the observations?</td><td class="mono">memory/search_nodes</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to look up the details for the entities named &#39;Apple Inc.&#39;, &#39;Elon Musk&#39;, and &#39;Tesla Model S&#39; in our knowledge graph—can you fetch those specific nodes for me?</td><td class="mono">memory/open_nodes</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you just repeat back the exact text I sent: &#39;Please confirm the order details: customer ID 12345, product XYZ-789, quantity 2, and shipping address 123 Main St, Anytown, CA 90210&#39;?</td><td class="mono">everything/echo</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Show me an example error message with annotations so I can see how content metadata looks.</td><td class="mono">everything/get-annotated-message</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I&#39;m having trouble with the server configuration and need to check all the environment variables to see if anything is misconfigured. Could you show me the current settings, especially anything related to database connections or API keys?</td><td class="mono">everything/get-env</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you show me the region &#39;ap-southeast-1&#39; and confirm what the Mcp-Param-Region header was when this request was made?</td><td class="mono">everything/get-header-params</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Give me 5 links to the sample resources this server provides.</td><td class="mono">everything/get-resource-links</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to fetch the text content for the resource with ID 42 so I can process it further in my application workflow.</td><td class="mono">everything/get-resource-reference</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Give me the weather for Chicago as structured data that I can validate against a schema.</td><td class="mono">everything/get-structured-content</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">What is the total when I combine the values 15.75 and 22.30?</td><td class="mono">everything/get-sum</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you show me a tiny version of the MCP logo for my website header?</td><td class="mono">everything/get-tiny-image</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you compress the latest README from the modelcontextprotocol/servers repo and save it as a downloadable file named &#39;docs-latest.md.gz&#39; so I can include it in my deployment package?</td><td class="mono">everything/gzip-file-as-resource</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Announce to connected clients that the prompts list has changed.</td><td class="mono">everything/trigger-list-changed</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Make the server send a burst of log messages at different levels so I can test my log viewer.</td><td class="mono">everything/trigger-log-messages</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to simulate a long-running data processing task that takes about 15 seconds to complete, with 8 distinct progress steps so I can visualize how the system updates in real-time.</td><td class="mono">everything/trigger-long-running-operation</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Hey, I just updated the content for the user profile at `users://profiles/12345`—can you let all subscribers know it’s changed?</td><td class="mono">everything/trigger-resource-update</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to turn off the simulated logging for this session since it&#39;s making the debug output too noisy and interfering with my testing of the new API calls.</td><td class="mono">everything/toggle-simulated-logging</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">I need to temporarily pause all simulated subscription updates for the `/api/v1/orders` resource so our frontend can catch up with the latest changes without flooding the UI.</td><td class="mono">everything/toggle-subscriber-updates</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="bad" title="?:everything__trigger-subscriber-updates">✗</span></td>      </tr><tr><td class="t">I&#39;m trying to design a new workflow for our customer support team that involves multiple steps—first triaging issues, then escalating to specialists, and finally following up—but I&#39;m not entirely sure how to structure it yet. Can you help me break this down and refine it as I think through the details?</td><td class="mono">thinking/sequentialthinking</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">What time is it right now in Sydney, Australia?</td><td class="mono">time/get_current_time</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">What time is it in Sydney, Australia right now if it&#39;s 3:45 PM in Madrid?</td><td class="mono">time/convert_time</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr><tr><td class="t">Can you grab the latest news article from https://www.bbc.com/news/technology and summarize the main points for me? I&#39;d like to see the most important details from the first 1000 characters of the content.</td><td class="mono">fetch/fetch</td>
+<td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td><td class="r mark"><span class="ok">✓</span> · <span class="ok">✓</span></td>      </tr></tbody>
+    </table></div>
+  </details>
+</section>
+
+<section class="card note">
+  <h2 style="color:var(--fg)" data-i18n="method">How this was measured</h2>
+  <ul>
+    <li data-i18n="m1">Servers were started over stdio with the official MCP Python SDK and asked for tools/list. No tool was called.</li>
+    <li data-i18n="m2">Token counts use tiktoken o200k_base on each tool as an OpenAI-style function definition. They are approximate: every provider has its own tokenizer and tool template. The billed prompt tokens per model come from the provider's own usage field.</li>
+    <li><span data-i18n="m3">Requests were written by a model from each tool's description and can be edited in the intents YAML.</span> <span data-i18n="m3b">Written by</span> <code>mistral:ministral-8b-latest</code>, <span data-i18n="m3c">then reviewed by hand</span>.</li>
+    <li data-i18n="m4">Each model got the same system prompt asking for exactly one tool call, temperature 0, one try per request. With one or two requests per tool, a single answer moves a percentage by several points: read differences of a few points as noise.</li>
+    <li data-i18n="m5">Monthly cost uses list input prices and ignores prompt caching, which many agents use and which lowers the real bill.</li>
+  </ul>
+  <p><span data-i18n="servers">servers</span>: <code>npx -y @modelcontextprotocol/server-filesystem@2.1.0 .</code> (secure-filesystem-server 2.1.0), <code>npx -y @modelcontextprotocol/server-memory@2.0.1</code> (memory-server 2.0.1), <code>npx -y @modelcontextprotocol/server-everything@2.1.0</code> (mcp-servers/everything 2.1.0), <code>npx -y @modelcontextprotocol/server-sequential-thinking@2.0.0</code> (sequential-thinking-server 2.0.0), <code>uvx mcp-server-time==2026.10.28</code> (mcp-time 2026.10.28), <code>uvx mcp-server-fetch==2026.10.28</code> (mcp-fetch 2026.10.28)</p>
+</section>
+
+<footer>
+  <span><a href="https://github.com/diegoperezg7/toolbloat">github.com/diegoperezg7/toolbloat</a> · MIT</span>
+  <span><span data-i18n="spend">API cost of these calls</span> $0.14 · <span data-i18n="generated">generated by toolbloat</span> 0.1.0</span>
+</footer>
+</div>
+<script>
+(function () {
+  var es = {
+    report: "informe", theme: "Tema", title: "Lo que cuesta tu pila MCP y dónde los modelos eligen mal la tool",
+    lead: "Las definiciones de las tools se envían al modelo en cada turno. toolbloat las cuenta y luego pregunta a cada modelo qué tool usaría para peticiones realistas, primero con solo el servidor correcto cargado y después con todos. Nunca se ejecuta ninguna tool.",
+    recordedChip: "Ejecución grabada", date: "Fecha", models: "Modelos", hardware: "Hardware",
+    kTokens: "tokens de definiciones de tools en cada turno (aprox.)", kTools: "tools / servidores en la pila",
+    kMonthly: "tokens al mes con", kTurns: "turnos/día", kWorst: "mayor cambio de acierto al juntar servidores", pts: "pts",
+    kNoModels: "aún no hay resultados de modelos", failed: "Servidores que no arrancaron",
+    perServer: "Tokens por servidor", perServerSub: "Cada tool se cuenta como nombre, descripción y JSON Schema con tiktoken o200k. Cada proveedor usa su propio tokenizer, así que son aproximados.",
+    toolsShort: "tools", heaviest: "Las tools que más pesan", heaviestSub: "Las diez definiciones que más tokens cuestan.", tool: "Tool", tokens: "Tokens",
+    accuracy: "Acierto al elegir tool: sola vs. con toda la pila", accuracySub: "Porcentaje de peticiones en las que el modelo llamó a la tool esperada. «Sola» carga solo el servidor de esa tool; «con la pila» carga los", servers: "servidores", requests: "peticiones",
+    alone: "Sola", stacked: "Con la pila", model: "Modelo", change: "Cambio", broken: "Rotas al juntar", rightServer: "Servidor correcto", validArgs: "Args válidos", noCall: "Sin llamada", billed: "Tokens facturados", perMonth: "$ / mes", local: "local",
+    accNote1: "«Rotas al juntar»: peticiones que el modelo acertó con su servidor solo y falló con toda la pila. «Args válidos»: llamadas correctas cuyos argumentos validan contra el JSON Schema de la tool. «Tokens facturados»: media de tokens de prompt que el proveedor reportó en una llamada con la pila. «$ / mes»: tokens de definiciones aprox. × precio de entrada de lista ×", accNote2: "turnos/día × 30 días, sin caché de prompt.",
+    confusion: "Confusión entre servidores (con la pila)", confusionSub: "Filas: el servidor de la tool esperada. Columnas: el servidor de la tool que el modelo llamó. Las celdas fuera de la diagonal son elecciones del servidor equivocado.",
+    show: "Mostrar", allModels: "Todos los modelos", expectedChosen: "esperado ↓ · elegido →", noCallCol: "sin llamada", unknownCol: "desconocida",
+    wrong: "Errores más comunes (con la pila)", wrongSub: "Tool esperada y la que llamó el modelo en su lugar, sumando todos los modelos.", expected: "Esperada", chosen: "Elegida", otherServer: "otro servidor", noWrong: "Ningún error.",
+    never: "Tools que ningún modelo eligió (con la pila)", neverSub: "Quitarlas ahorraría unos", neverSub2: "tokens por turno", perMonthShort: "al mes", neverCaveat: "Compruébalo antes de quitarlas: una tool puede ser útil aunque estas peticiones no llegaran a ella.", allChosen: "Todas las tools se eligieron al menos una vez.", untested: "Ninguna petición apuntaba a estas tools, así que no se han juzgado:",
+    perIntent: "Todas las peticiones y respuestas", perIntentSub: "✓ tool esperada · ✗ otra tool (pasa el ratón para verla) · – sin llamada o llamada fallida. A = sola, S = con la pila.", request: "Petición",
+    method: "Cómo se ha medido",
+    m1: "Los servidores se arrancaron por stdio con el SDK oficial de MCP para Python y se les pidió tools/list. No se llamó a ninguna tool.",
+    m2: "Los tokens se cuentan con tiktoken o200k_base sobre cada tool como definición de función al estilo OpenAI. Son aproximados: cada proveedor tiene su propio tokenizer y plantilla de tools. Los tokens de prompt facturados salen del campo usage de cada proveedor.",
+    m3: "Las peticiones las escribió un modelo a partir de la descripción de cada tool y se pueden editar en el YAML de intenciones.", m3b: "Escritas por", m3c: "y revisadas a mano",
+    m4: "Cada modelo recibió el mismo prompt de sistema pidiendo exactamente una llamada, temperatura 0, un intento por petición. Con una o dos peticiones por tool, una sola respuesta mueve el porcentaje varios puntos: diferencias de pocos puntos son ruido.",
+    m5: "El coste mensual usa precios de entrada de lista e ignora la caché de prompt, que muchos agentes usan y que baja la factura real.",
+    truncated: "truncado", answered: "respondidas", stopped: "Esta ejecución paró antes de terminar:", spend: "Coste en APIs de estas llamadas", generated: "generado por toolbloat"
+  };
+  var nodes = document.querySelectorAll("[data-i18n]");
+  var en = {};
+  nodes.forEach(function (n) { en[n.getAttribute("data-i18n")] = n.textContent; });
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  var lang = read("toolbloat-lang") || ((navigator.language || "en").toLowerCase().indexOf("es") === 0 ? "es" : "en");
+  var btn = document.getElementById("lang");
+  function setLang(l) {
+    lang = l;
+    document.documentElement.lang = l;
+    nodes.forEach(function (n) { var k = n.getAttribute("data-i18n"); n.textContent = l === "es" && es[k] ? es[k] : en[k]; });
+    btn.textContent = l === "es" ? "EN" : "ES";
+  }
+  btn.addEventListener("click", function () { setLang(lang === "es" ? "en" : "es"); store("toolbloat-lang", lang); });
+  setLang(lang);
+  var root = document.documentElement;
+  var saved = read("toolbloat-theme");
+  if (saved) root.setAttribute("data-theme", saved);
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") ? root.getAttribute("data-theme") === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("toolbloat-theme", next);
+  });
+  var sel = document.getElementById("mx");
+  if (sel) sel.addEventListener("change", function () {
+    document.querySelectorAll(".mxv").forEach(function (d) { d.classList.toggle("hidden", d.getAttribute("data-mx") !== sel.value); });
+  });
+  var q = new URLSearchParams(location.search);
+  if (q.get("theme")) root.setAttribute("data-theme", q.get("theme"));
+  if (q.get("lang")) setLang(q.get("lang"));
+})();
+</script>
+</body>
+</html>

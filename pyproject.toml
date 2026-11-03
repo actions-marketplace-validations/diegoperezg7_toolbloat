@@ -1,0 +1,68 @@
+[project]
+name = "toolbloat"
+version = "0.1.0"
+description = "See what your MCP servers cost in tokens on every turn, and whether stacking them makes your model pick the wrong tool."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Diego Pérez" }]
+requires-python = ">=3.11"
+keywords = ["mcp", "model-context-protocol", "llm", "tool-calling", "tokens", "evaluation", "agents"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "jinja2==3.1.6",
+    "jsonschema==4.26.0",
+    "mcp==2.3.0",
+    "openai==3.42.1",
+    "pyyaml==6.0.3",
+    "rich==15.0.0",
+    "tiktoken==0.14.0",
+    "typer==0.27.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/diegoperezg7/toolbloat"
+Report = "https://diegoperezg7.github.io/toolbloat/"
+Issues = "https://github.com/diegoperezg7/toolbloat/issues"
+
+[project.scripts]
+toolbloat = "toolbloat.cli:entry"
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "ruff==0.17.3",
+]
+
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toolbloat"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/toolbloat", "tests", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: needs real MCP servers via npx/uvx and network (deselect with -m 'not live')"]
+addopts = "-m 'not live'"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]

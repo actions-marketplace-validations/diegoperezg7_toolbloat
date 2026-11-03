@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem@2.1.0", "."] },
+    "memory": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory@2.0.1"] },
+    "everything": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-everything@2.1.0"] },
+    "thinking": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking@2.0.0"] },
+    "time": { "command": "uvx", "args": ["mcp-server-time==2026.10.28"] },
+    "fetch": { "command": "uvx", "args": ["mcp-server-fetch==2026.10.28"] }
+  }
+}

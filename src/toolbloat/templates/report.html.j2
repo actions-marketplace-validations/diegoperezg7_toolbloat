@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>toolbloat report</title>
+<meta name="description" content="Token cost and tool-selection accuracy of an MCP server stack, measured by toolbloat.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='6' fill='%238f3bb3'/%3E%3Cpath d='M9.6 4.8v3.2M14.4 4.8v3.2M7.6 8h8.8v2.6a4.4 4.4 0 0 1-8.8 0zM12 15v4.4' fill='none' stroke='%23fff' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #ffffff; --surface: #ffffff; --sunken: #f6f6f9; --fg: #111116; --muted: #5c5d66; --border: #e4e4e9;
+  --shadow: 0 1px 2px rgba(17,17,22,.05), 0 6px 20px rgba(17,17,22,.06);
+  --accent: #8f3bb3; --tile: #8f3bb3; --tile-fg: #ffffff;
+  --ok: #11813c; --warn: #a45e00; --err: #c22826;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #0d0d10; --sunken: #0d0d10; --fg: #f4f5f8; --muted: #a3a4ae; --border: #28282e;
+    --shadow: 0 0 0 1px rgba(255,255,255,.02), 0 10px 30px rgba(0,0,0,.7);
+    --accent: #ce92ec; --ok: #5fd37f; --warn: #f7b83d; --err: #f66d67; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #0d0d10; --sunken: #0d0d10; --fg: #f4f5f8; --muted: #a3a4ae; --border: #28282e;
+  --shadow: 0 0 0 1px rgba(255,255,255,.02), 0 10px 30px rgba(0,0,0,.7);
+  --accent: #ce92ec; --ok: #5fd37f; --warn: #f7b83d; --err: #f66d67; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 16px 64px; }
+a { color: var(--accent); }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+header.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--fg); }
+.brand svg { width: 32px; height: 32px; }
+.brand b { font-size: 20px; letter-spacing: -.01em; }
+.brand span { color: var(--muted); font-weight: 500; }
+.toggles { display: flex; gap: 8px; }
+.toggles button { font: inherit; font-size: 13px; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; min-height: 34px; }
+.toggles button:hover { border-color: var(--accent); }
+h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.15; letter-spacing: -.02em; margin: 28px 0 8px; }
+h2 { font-size: 19px; margin: 0 0 4px; letter-spacing: -.01em; }
+.lead { color: var(--muted); max-width: 760px; margin: 0 0 16px; }
+.recorded { display: inline-flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); border-radius: 10px; padding: 8px 12px; font-size: 13px; color: var(--muted); }
+.recorded b { color: var(--fg); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 8px; }
+.kpi, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+.kpi { padding: 14px 16px; }
+.kpi .v { font-family: var(--font-mono); font-size: 26px; font-weight: 500; letter-spacing: -.02em; }
+.kpi .l { font-size: 13px; color: var(--muted); }
+.kpi .v small { font-size: 14px; color: var(--muted); }
+.card { padding: 18px; margin-top: 18px; }
+.card > p.muted { margin: 0 0 14px; font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid2 > .card { margin-top: 0; min-width: 0; }
+.card { min-width: 0; }
+td.mono { overflow-wrap: anywhere; }
+.acc td.model { white-space: nowrap; overflow-wrap: normal; }
+.grid2.wide { grid-template-columns: 3fr 2fr; }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 96px 1fr 104px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .track { height: 12px; background: var(--sunken); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.bar .n { text-align: right; font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
+.bar .n small { color: var(--muted); font-size: 12px; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+td.r, th.r { text-align: right; }
+td.num { white-space: nowrap; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.down { color: var(--err); } .up { color: var(--ok); } .flat { color: var(--muted); }
+.dumb { position: relative; height: 18px; min-width: 100px; }
+.acc th, .acc td { padding: 8px 7px; }
+.acc td.model { font-size: 13px; }
+.acc td.model small { display: block; color: var(--muted); font-size: 11px; }
+.dumb .line { position: absolute; top: 8px; height: 2px; background: var(--border); }
+.dumb .dot { position: absolute; top: 3px; width: 12px; height: 12px; border-radius: 50%; margin-left: -6px; }
+.dumb .solo { background: var(--surface); border: 2px solid var(--muted); }
+.dumb .stack { background: var(--accent); }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin: 0 0 10px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.matrix { width: auto; }
+.matrix td, .matrix th { text-align: center; padding: 6px 8px; font-family: var(--font-mono); font-size: 13px; }
+.matrix th.rowh, .matrix td.rowh { text-align: left; font-family: var(--font-sans); font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--fg); font-weight: 500; }
+.matrix td.cell { border: 1px solid var(--border); min-width: 46px; }
+.matrix td.hit { background: color-mix(in srgb, var(--ok) calc(var(--a) * 100%), transparent); }
+.matrix td.miss { background: color-mix(in srgb, var(--err) calc(var(--a) * 100%), transparent); }
+.matrix td.zero { color: var(--muted); }
+select { font: inherit; font-size: 14px; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
+.ok { color: var(--ok); } .bad { color: var(--err); } .warn { color: var(--warn); }
+ul.never { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+ul.never li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+details summary { cursor: pointer; font-weight: 600; }
+.intents td.t { min-width: 240px; }
+.mark { font-family: var(--font-mono); font-size: 13px; }
+.note { font-size: 14px; color: var(--muted); }
+.note li { margin-bottom: 6px; }
+code { font-family: var(--font-mono); font-size: 13px; background: var(--sunken); border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; overflow-wrap: anywhere; }
+footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hidden { display: none; }
+@media (max-width: 860px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid2, .grid2.wide { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .kpi .v { font-size: 21px; }
+  .bar { grid-template-columns: 80px 1fr 92px; font-size: 13px; }
+  .card { padding: 14px; }
+  th, td { padding: 7px 6px; }
+  td.mono, .mono { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-tool" viewBox="0 0 24 24">
+      <rect x="1" y="1" width="22" height="22" rx="6" fill="var(--tile)"/>
+      <path d="M9.6 4.8v3.2M14.4 4.8v3.2M7.6 8h8.8v2.6a4.4 4.4 0 0 1-8.8 0zM12 15v4.4" fill="none" stroke="var(--tile-fg)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="https://github.com/diegoperezg7/toolbloat"><svg aria-hidden="true"><use href="#g-tool"/></svg><b>toolbloat</b><span data-i18n="report">report</span></a>
+  <div class="toggles">
+    <button type="button" id="lang" aria-label="Language">ES</button>
+    <button type="button" id="theme" aria-label="Theme" data-i18n="theme">Theme</button>
+  </div>
+</header>
+
+<h1 data-i18n="title">What your MCP stack costs, and where models pick the wrong tool</h1>
+<p class="lead" data-i18n="lead">Tool definitions are sent to the model on every turn. toolbloat counts them, then asks each model which tool it would call for realistic requests, first with only the right server loaded and then with every server loaded. No tool is ever executed.</p>
+<div class="recorded">
+  {% if recorded %}<span class="chip" style="color:var(--accent)" data-i18n="recordedChip">Recorded run</span>{% endif %}
+  <span><span data-i18n="date">Date</span> <b>{{ r.created_at[:10] }}</b></span>
+  <span>toolbloat <b>{{ r.version }}</b></span>
+  <span><span data-i18n="models">Models</span> <b>{{ r.models|map(attribute='id')|join(', ') }}</b></span>
+  <span><span data-i18n="hardware">Hardware</span> <b>{{ r.environment.hardware }}</b></span>
+</div>
+
+<section class="kpis">
+  <div class="kpi"><div class="v">{{ m.total_tokens|num }}</div><div class="l" data-i18n="kTokens">tokens of tool definitions on every turn (approx.)</div></div>
+  <div class="kpi"><div class="v">{{ m.n_tools }} <small>/ {{ m.n_servers }}</small></div><div class="l" data-i18n="kTools">tools / servers in the stack</div></div>
+  <div class="kpi"><div class="v">{{ m.monthly_tokens|big }}</div><div class="l"><span data-i18n="kMonthly">tokens per month at</span> {{ m.turns_per_day }} <span data-i18n="kTurns">turns/day</span></div></div>
+  {% if worst %}
+  <div class="kpi"><div class="v {{ 'down' if worst.delta < 0 else 'flat' }}">{{ worst.delta|pts }} <small data-i18n="pts">pts</small></div><div class="l"><span data-i18n="kWorst">largest accuracy change when stacked</span> · <span class="mono">{{ worst.id }}</span></div></div>
+  {% else %}
+  <div class="kpi"><div class="v">–</div><div class="l" data-i18n="kNoModels">no model results yet</div></div>
+  {% endif %}
+</section>
+
+{% if m.failed_servers %}
+<div class="card"><h2 class="bad" data-i18n="failed">Servers that failed to start</h2>
+<ul>{% for s in m.failed_servers %}<li><b>{{ s.name }}</b> <code>{{ s.command }}</code>: {{ s.error }}</li>{% endfor %}</ul></div>
+{% endif %}
+
+<div class="grid2" style="margin-top:18px">
+<section class="card">
+  <h2 data-i18n="perServer">Tokens per server</h2>
+  <p class="muted" data-i18n="perServerSub">Each tool counted as name, description and JSON Schema with tiktoken o200k. Providers use their own tokenizers, so treat these as approximate.</p>
+  <div class="bars">
+  {% for s in m.per_server %}
+    <div class="bar"><span title="{{ s.command }}">{{ s.name }}</span><div class="track"><div class="fill" style="width: {{ (100 * s.tokens / max_server_tokens)|round(1) }}%"></div></div><span class="n">{{ s.tokens|num }} <small>· {{ s.tools }}</small></span></div>
+  {% endfor %}
+  </div>
+</section>
+<section class="card">
+  <h2 data-i18n="heaviest">Heaviest tools</h2>
+  <p class="muted" data-i18n="heaviestSub">The ten tool definitions that cost the most tokens.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th data-i18n="tool">Tool</th><th class="r" data-i18n="tokens">Tokens</th></tr></thead>
+    <tbody>{% for t in m.heaviest_tools[:10] %}<tr><td class="mono">{{ t.tool | wbr }}</td><td class="r num">{{ t.tokens|num }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+</div>
+
+{% if m.models %}
+<section class="card">
+  <h2 data-i18n="accuracy">Tool selection accuracy: alone vs. stacked</h2>
+  <p class="muted"><span data-i18n="accuracySub">Share of requests where the model called the expected tool. "Alone" loads only that tool's server; "stacked" loads all</span> {{ m.n_servers }} <span data-i18n="servers">servers</span> ({{ m.n_tools }} <span data-i18n="toolsShort">tools</span>), {{ m.n_intents }} <span data-i18n="requests">requests</span>.</p>
+  <div class="legend"><span><i style="border:2px solid var(--muted);background:var(--surface)"></i><span data-i18n="alone">alone</span></span><span><i style="background:var(--accent)"></i><span data-i18n="stacked">stacked</span></span></div>
+  <div class="table-wrap"><table class="acc">
+    <thead><tr>
+      <th data-i18n="model">Model</th><th class="r" data-i18n="alone">Alone</th><th class="r" data-i18n="stacked">Stacked</th><th style="min-width:110px" aria-label="0-100%"></th>
+      <th class="r" data-i18n="change">Change</th><th class="r" data-i18n="broken">Broken by stacking</th><th class="r" data-i18n="rightServer">Right server</th>
+      <th class="r" data-i18n="validArgs">Valid args</th><th class="r" data-i18n="noCall">No call</th><th class="r" data-i18n="billed">Billed tokens</th><th class="r" data-i18n="perMonth">$ / month</th>
+    </tr></thead>
+    <tbody>
+    {% for x in m.models %}
+      <tr>
+        <td class="mono model"><small>{{ x.id.split(':', 1)[0] }}{% if x.stack_n < m.n_intents or x.solo_n < m.n_intents %} · {{ [x.solo_n, x.stack_n]|min }}/{{ m.n_intents }} <span data-i18n="answered">answered</span>{% endif %}</small>{{ x.id.split(':', 1)[1] }}{% if x.truncated %} <span class="chip" style="color:var(--warn)" title="context window smaller than the tool list" data-i18n="truncated">truncated</span>{% endif %}{% if x.solo_errors or x.stack_errors %} <span class="warn" title="failed calls">({{ x.solo_errors + x.stack_errors }} err)</span>{% endif %}</td>
+        <td class="r num">{{ x.solo_acc|pct }}</td>
+        <td class="r num">{{ x.stack_acc|pct }}</td>
+        <td>{% if x.solo_acc is not none and x.stack_acc is not none %}
+          {% set a = (x.solo_acc * 100)|round(1) %}{% set b = (x.stack_acc * 100)|round(1) %}
+          <div class="dumb" aria-hidden="true"><div class="line" style="left: {{ [a,b]|min }}%; width: {{ ([a,b]|max) - ([a,b]|min) }}%"></div><div class="dot solo" style="left: {{ a }}%"></div><div class="dot stack" style="left: {{ b }}%"></div></div>
+        {% endif %}</td>
+        <td class="r num {{ 'down' if x.delta is not none and x.delta < -0.005 else 'up' if x.delta is not none and x.delta > 0.005 else 'flat' }}">{{ x.delta|pts }}</td>
+        <td class="r num">{{ x.broken_by_stack }}</td>
+        <td class="r num">{{ x.stack_server_acc|pct }}</td>
+        <td class="r num">{{ x.stack_args_valid|pct }}</td>
+        <td class="r num">{{ x.stack_no_call|pct }}</td>
+        <td class="r num">{{ x.stack_prompt_tokens|num }}</td>
+        <td class="r num">{% if x.id.startswith('ollama:') %}<span data-i18n="local">local</span>{% else %}{{ x.monthly_usd|usd }}{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="note"><span data-i18n="accNote1">"Broken by stacking": requests the model answered correctly alone and wrongly with the whole stack. "Valid args": correct calls whose arguments validate against the tool's JSON Schema. "Billed tokens": average prompt tokens the provider reported for a stacked call. "$ / month": approximate definition tokens × list input price ×</span> {{ m.turns_per_day }} <span data-i18n="accNote2">turns/day × 30 days, without prompt caching.</span></p>
+</section>
+
+<section class="card">
+  <h2 data-i18n="confusion">Cross-server confusion (stacked)</h2>
+  <p class="muted" data-i18n="confusionSub">Rows: the server that owns the expected tool. Columns: the server of the tool the model actually called. Off-diagonal cells are picks from the wrong server.</p>
+  <p><label><span data-i18n="show">Show</span> <select id="mx">
+    <option value="all" data-i18n="allModels">All models</option>
+    {% for x in m.models %}<option value="{{ loop.index }}">{{ x.id }}</option>{% endfor %}
+  </select></label></p>
+  {% macro matrix(cells, id, hidden) %}
+  {% set mx = namespace(v=1) %}{% for row in cells.values() %}{% for v in row.values() %}{% if v > mx.v %}{% set mx.v = v %}{% endif %}{% endfor %}{% endfor %}
+  <div class="table-wrap mxv{{ ' hidden' if hidden }}" data-mx="{{ id }}"><table class="matrix">
+    <thead><tr><th class="rowh" data-i18n="expectedChosen">expected ↓ · chosen →</th>{% for c in m.matrix.cols %}<th>{% if c == NONE %}<span data-i18n="noCallCol">no call</span>{% elif c == UNKNOWN %}<span data-i18n="unknownCol">unknown</span>{% else %}{{ c }}{% endif %}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in m.matrix.rows %}<tr><td class="rowh">{{ row }}</td>{% for c in m.matrix.cols %}{% set v = (cells.get(row) or {}).get(c, 0) %}<td class="cell {{ 'zero' if v == 0 else ('hit' if c == row else 'miss') }}" style="--a: {{ (0.12 + 0.6 * v / mx.v)|round(2) if v else 0 }}">{{ v }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+  {% endmacro %}
+  {{ matrix(m.matrix.cells, 'all', false) }}
+  {% for x in m.models %}{{ matrix(m.per_model_matrix.get(x.id, {}), loop.index|string, true) }}{% endfor %}
+</section>
+
+<div class="grid2 wide" style="margin-top:18px">
+<section class="card">
+  <h2 data-i18n="wrong">Most common wrong picks (stacked)</h2>
+  <p class="muted" data-i18n="wrongSub">Expected tool and what the model called instead, across all models.</p>
+  {% if m.confusions %}
+  <div class="table-wrap"><table>
+    <thead><tr><th data-i18n="expected">Expected</th><th data-i18n="chosen">Chosen</th><th class="r">n</th></tr></thead>
+    <tbody>{% for c in m.confusions[:12] %}<tr><td class="mono">{{ c.expected | wbr }}</td><td class="mono">{% if c.chosen == NONE %}<span class="muted" data-i18n="noCallCol">no call</span>{% else %}{{ c.chosen | wbr }}{% endif %}{% if c.cross_server %} <span class="chip" style="color:var(--err)" data-i18n="otherServer">other server</span>{% endif %}</td><td class="r num" title="{{ c.models|join(', ') }}">{{ c.count }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p data-i18n="noWrong">No wrong picks.</p>{% endif %}
+</section>
+<section class="card">
+  <h2 data-i18n="never">Tools no model chose (stacked)</h2>
+  <p class="muted"><span data-i18n="neverSub">Removing them would save about</span> <b class="mono">{{ m.never_tokens|num }}</b> <span data-i18n="neverSub2">tokens per turn</span> (~{{ m.never_monthly_tokens|big }} <span data-i18n="perMonthShort">per month</span>). <span data-i18n="neverCaveat">Check before removing: a tool can be useful even if these requests did not reach it.</span></p>
+  {% if m.never_chosen %}
+  <ul class="never">{% for n in m.never_chosen %}<li><span class="mono">{{ n.tool | wbr }}</span><span class="num muted">{{ n.tokens|num }}</span></li>{% endfor %}</ul>
+  {% else %}<p data-i18n="allChosen">Every tool was chosen at least once.</p>{% endif %}
+  {% if m.untested %}<p class="note warn"><span data-i18n="untested">No request targeted these tools, so they were not judged:</span> {{ m.untested|join(', ') }}</p>{% endif %}
+</section>
+</div>
+
+<section class="card">
+  <details>
+    <summary><span data-i18n="perIntent">Every request and every answer</span> ({{ m.n_intents }})</summary>
+    <p class="muted" style="margin-top:10px" data-i18n="perIntentSub">✓ expected tool · ✗ another tool (hover to see which) · – no call or failed call. A = alone, S = stacked.</p>
+    <div class="table-wrap"><table class="intents">
+      <thead><tr><th data-i18n="request">Request</th><th data-i18n="expected">Expected</th>{% for x in m.models %}<th class="r mono" title="{{ x.id }}">{{ x.id.split(':', 1)[1] }}<br>A · S</th>{% endfor %}</tr></thead>
+      <tbody>{% for i in m.intent_rows %}<tr><td class="t">{{ i.text }}</td><td class="mono">{{ i.tool }}</td>
+        {% for x in m.models %}<td class="r mark">{% for cond in ['solo', 'stack'] %}{% set c = i.cells.get(x.id ~ '|' ~ cond) %}{% if c is none or c.error or c.chosen is none %}<span class="muted" title="{{ 'error' if c and c.error else 'no call' }}">–</span>{% elif c.ok %}<span class="ok">✓</span>{% else %}<span class="bad" title="{{ c.chosen }}">✗</span>{% endif %}{% if loop.first %} · {% endif %}{% endfor %}</td>{% endfor %}
+      </tr>{% endfor %}</tbody>
+    </table></div>
+  </details>
+</section>
+{% endif %}
+
+<section class="card note">
+  <h2 style="color:var(--fg)" data-i18n="method">How this was measured</h2>
+  <ul>
+    <li data-i18n="m1">Servers were started over stdio with the official MCP Python SDK and asked for tools/list. No tool was called.</li>
+    <li data-i18n="m2">Token counts use tiktoken o200k_base on each tool as an OpenAI-style function definition. They are approximate: every provider has its own tokenizer and tool template. The billed prompt tokens per model come from the provider's own usage field.</li>
+    <li><span data-i18n="m3">Requests were written by a model from each tool's description and can be edited in the intents YAML.</span>{% if r.intents_meta and r.intents_meta.generated_by %} <span data-i18n="m3b">Written by</span> <code>{{ r.intents_meta.generated_by }}</code>{% if r.intents_meta.reviewed %}, <span data-i18n="m3c">then reviewed by hand</span>{% endif %}.{% endif %}</li>
+    <li data-i18n="m4">Each model got the same system prompt asking for exactly one tool call, temperature 0, one try per request. With one or two requests per tool, a single answer moves a percentage by several points: read differences of a few points as noise.</li>
+    <li data-i18n="m5">Monthly cost uses list input prices and ignores prompt caching, which many agents use and which lowers the real bill.</li>
+    {% if r.stopped %}<li class="warn"><span data-i18n="stopped">This run stopped early:</span> {{ r.stopped }}</li>{% endif %}
+  </ul>
+  <p><span data-i18n="servers">servers</span>: {% for s in r.servers %}<code>{{ s.command }}</code>{% if s.server_version %} ({{ s.server_version }}){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+</section>
+
+<footer>
+  <span><a href="https://github.com/diegoperezg7/toolbloat">github.com/diegoperezg7/toolbloat</a> · MIT</span>
+  <span>{% if m.total_spend %}<span data-i18n="spend">API cost of these calls</span> {{ m.total_spend|usd }} · {% endif %}<span data-i18n="generated">generated by toolbloat</span> {{ r.version }}</span>
+</footer>
+</div>
+<script>
+(function () {
+  var es = {
+    report: "informe", theme: "Tema", title: "Lo que cuesta tu pila MCP y dónde los modelos eligen mal la tool",
+    lead: "Las definiciones de las tools se envían al modelo en cada turno. toolbloat las cuenta y luego pregunta a cada modelo qué tool usaría para peticiones realistas, primero con solo el servidor correcto cargado y después con todos. Nunca se ejecuta ninguna tool.",
+    recordedChip: "Ejecución grabada", date: "Fecha", models: "Modelos", hardware: "Hardware",
+    kTokens: "tokens de definiciones de tools en cada turno (aprox.)", kTools: "tools / servidores en la pila",
+    kMonthly: "tokens al mes con", kTurns: "turnos/día", kWorst: "mayor cambio de acierto al juntar servidores", pts: "pts",
+    kNoModels: "aún no hay resultados de modelos", failed: "Servidores que no arrancaron",
+    perServer: "Tokens por servidor", perServerSub: "Cada tool se cuenta como nombre, descripción y JSON Schema con tiktoken o200k. Cada proveedor usa su propio tokenizer, así que son aproximados.",
+    toolsShort: "tools", heaviest: "Las tools que más pesan", heaviestSub: "Las diez definiciones que más tokens cuestan.", tool: "Tool", tokens: "Tokens",
+    accuracy: "Acierto al elegir tool: sola vs. con toda la pila", accuracySub: "Porcentaje de peticiones en las que el modelo llamó a la tool esperada. «Sola» carga solo el servidor de esa tool; «con la pila» carga los", servers: "servidores", requests: "peticiones",
+    alone: "Sola", stacked: "Con la pila", model: "Modelo", change: "Cambio", broken: "Rotas al juntar", rightServer: "Servidor correcto", validArgs: "Args válidos", noCall: "Sin llamada", billed: "Tokens facturados", perMonth: "$ / mes", local: "local",
+    accNote1: "«Rotas al juntar»: peticiones que el modelo acertó con su servidor solo y falló con toda la pila. «Args válidos»: llamadas correctas cuyos argumentos validan contra el JSON Schema de la tool. «Tokens facturados»: media de tokens de prompt que el proveedor reportó en una llamada con la pila. «$ / mes»: tokens de definiciones aprox. × precio de entrada de lista ×", accNote2: "turnos/día × 30 días, sin caché de prompt.",
+    confusion: "Confusión entre servidores (con la pila)", confusionSub: "Filas: el servidor de la tool esperada. Columnas: el servidor de la tool que el modelo llamó. Las celdas fuera de la diagonal son elecciones del servidor equivocado.",
+    show: "Mostrar", allModels: "Todos los modelos", expectedChosen: "esperado ↓ · elegido →", noCallCol: "sin llamada", unknownCol: "desconocida",
+    wrong: "Errores más comunes (con la pila)", wrongSub: "Tool esperada y la que llamó el modelo en su lugar, sumando todos los modelos.", expected: "Esperada", chosen: "Elegida", otherServer: "otro servidor", noWrong: "Ningún error.",
+    never: "Tools que ningún modelo eligió (con la pila)", neverSub: "Quitarlas ahorraría unos", neverSub2: "tokens por turno", perMonthShort: "al mes", neverCaveat: "Compruébalo antes de quitarlas: una tool puede ser útil aunque estas peticiones no llegaran a ella.", allChosen: "Todas las tools se eligieron al menos una vez.", untested: "Ninguna petición apuntaba a estas tools, así que no se han juzgado:",
+    perIntent: "Todas las peticiones y respuestas", perIntentSub: "✓ tool esperada · ✗ otra tool (pasa el ratón para verla) · – sin llamada o llamada fallida. A = sola, S = con la pila.", request: "Petición",
+    method: "Cómo se ha medido",
+    m1: "Los servidores se arrancaron por stdio con el SDK oficial de MCP para Python y se les pidió tools/list. No se llamó a ninguna tool.",
+    m2: "Los tokens se cuentan con tiktoken o200k_base sobre cada tool como definición de función al estilo OpenAI. Son aproximados: cada proveedor tiene su propio tokenizer y plantilla de tools. Los tokens de prompt facturados salen del campo usage de cada proveedor.",
+    m3: "Las peticiones las escribió un modelo a partir de la descripción de cada tool y se pueden editar en el YAML de intenciones.", m3b: "Escritas por", m3c: "y revisadas a mano",
+    m4: "Cada modelo recibió el mismo prompt de sistema pidiendo exactamente una llamada, temperatura 0, un intento por petición. Con una o dos peticiones por tool, una sola respuesta mueve el porcentaje varios puntos: diferencias de pocos puntos son ruido.",
+    m5: "El coste mensual usa precios de entrada de lista e ignora la caché de prompt, que muchos agentes usan y que baja la factura real.",
+    truncated: "truncado", answered: "respondidas", stopped: "Esta ejecución paró antes de terminar:", spend: "Coste en APIs de estas llamadas", generated: "generado por toolbloat"
+  };
+  var nodes = document.querySelectorAll("[data-i18n]");
+  var en = {};
+  nodes.forEach(function (n) { en[n.getAttribute("data-i18n")] = n.textContent; });
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  var lang = read("toolbloat-lang") || ((navigator.language || "en").toLowerCase().indexOf("es") === 0 ? "es" : "en");
+  var btn = document.getElementById("lang");
+  function setLang(l) {
+    lang = l;
+    document.documentElement.lang = l;
+    nodes.forEach(function (n) { var k = n.getAttribute("data-i18n"); n.textContent = l === "es" && es[k] ? es[k] : en[k]; });
+    btn.textContent = l === "es" ? "EN" : "ES";
+  }
+  btn.addEventListener("click", function () { setLang(lang === "es" ? "en" : "es"); store("toolbloat-lang", lang); });
+  setLang(lang);
+  var root = document.documentElement;
+  var saved = read("toolbloat-theme");
+  if (saved) root.setAttribute("data-theme", saved);
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") ? root.getAttribute("data-theme") === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("toolbloat-theme", next);
+  });
+  var sel = document.getElementById("mx");
+  if (sel) sel.addEventListener("change", function () {
+    document.querySelectorAll(".mxv").forEach(function (d) { d.classList.toggle("hidden", d.getAttribute("data-mx") !== sel.value); });
+  });
+  var q = new URLSearchParams(location.search);
+  if (q.get("theme")) root.setAttribute("data-theme", q.get("theme"));
+  if (q.get("lang")) setLang(q.get("lang"));
+})();
+</script>
+</body>
+</html>
