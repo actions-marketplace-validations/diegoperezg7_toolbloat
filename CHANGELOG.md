@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-03
+
+### Changed
+- The privacy prompt before sending anything to a cloud provider now lists every server that will be
+  sent, the config file it came from (or `--server`), its command and the provider, and refuses
+  without `--yes` when there is no interactive terminal. `toolbloat intents` asks too.
+- The HTML report formats numbers, percentages and amounts for the active language
+  (English `6,064` / `$2.73`, Spanish `6.064` / `2,73 US$`).
+
 ## [0.1.0] - 2026-11-03
 
 ### Added
@@ -24,4 +33,5 @@ All notable changes to this project are documented here. The format follows
   `--max-cost`, backoff on rate limits and a resumable call cache.
 - Static HTML report in English and Spanish, light and dark, mobile friendly.
 
+[0.1.1]: https://github.com/diegoperezg7/toolbloat/releases/tag/v0.1.1
 [0.1.0]: https://github.com/diegoperezg7/toolbloat/releases/tag/v0.1.0

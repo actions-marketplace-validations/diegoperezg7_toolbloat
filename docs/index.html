@@ -150,10 +150,10 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
 </div>
 
 <section class="kpis">
-  <div class="kpi"><div class="v">6,064</div><div class="l" data-i18n="kTokens">tokens of tool definitions on every turn (approx.)</div></div>
+  <div class="kpi"><div class="v"><span data-n="6064" data-f="int">6,064</span></div><div class="l" data-i18n="kTokens">tokens of tool definitions on every turn (approx.)</div></div>
   <div class="kpi"><div class="v">43 <small>/ 6</small></div><div class="l" data-i18n="kTools">tools / servers in the stack</div></div>
-  <div class="kpi"><div class="v">18.2M</div><div class="l"><span data-i18n="kMonthly">tokens per month at</span> 100 <span data-i18n="kTurns">turns/day</span></div></div>
-  <div class="kpi"><div class="v down">-14 <small data-i18n="pts">pts</small></div><div class="l"><span data-i18n="kWorst">largest accuracy change when stacked</span> · <span class="mono">mistral:ministral-8b-latest</span></div></div>
+  <div class="kpi"><div class="v"><span data-n="18192000" data-f="big">18.2M</span></div><div class="l"><span data-i18n="kMonthly">tokens per month at</span> 100 <span data-i18n="kTurns">turns/day</span></div></div>
+  <div class="kpi"><div class="v down"><span data-n="-0.13953488372093026" data-f="pts">-14</span> <small data-i18n="pts">pts</small></div><div class="l"><span data-i18n="kWorst">largest accuracy change when stacked</span> · <span class="mono">mistral:ministral-8b-latest</span></div></div>
 </section>
 
 
@@ -162,12 +162,12 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
   <h2 data-i18n="perServer">Tokens per server</h2>
   <p class="muted" data-i18n="perServerSub">Each tool counted as name, description and JSON Schema with tiktoken o200k. Providers use their own tokenizers, so treat these as approximate.</p>
   <div class="bars">
-    <div class="bar"><span title="npx -y @modelcontextprotocol/server-everything@2.1.0">everything</span><div class="track"><div class="fill" style="width: 100.0%"></div></div><span class="n">1,825 <small>· 16</small></span></div>
-    <div class="bar"><span title="npx -y @modelcontextprotocol/server-filesystem@2.1.0 .">filesystem</span><div class="track"><div class="fill" style="width: 99.0%"></div></div><span class="n">1,806 <small>· 14</small></span></div>
-    <div class="bar"><span title="npx -y @modelcontextprotocol/server-memory@2.0.1">memory</span><div class="track"><div class="fill" style="width: 57.3%"></div></div><span class="n">1,045 <small>· 9</small></span></div>
-    <div class="bar"><span title="npx -y @modelcontextprotocol/server-sequential-thinking@2.0.0">thinking</span><div class="track"><div class="fill" style="width: 47.8%"></div></div><span class="n">873 <small>· 1</small></span></div>
-    <div class="bar"><span title="uvx mcp-server-time==2026.10.28">time</span><div class="track"><div class="fill" style="width: 15.4%"></div></div><span class="n">281 <small>· 2</small></span></div>
-    <div class="bar"><span title="uvx mcp-server-fetch==2026.10.28">fetch</span><div class="track"><div class="fill" style="width: 12.8%"></div></div><span class="n">234 <small>· 1</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-everything@2.1.0">everything</span><div class="track"><div class="fill" style="width: 100.0%"></div></div><span class="n"><span data-n="1825" data-f="int">1,825</span> <small>· 16</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-filesystem@2.1.0 .">filesystem</span><div class="track"><div class="fill" style="width: 99.0%"></div></div><span class="n"><span data-n="1806" data-f="int">1,806</span> <small>· 14</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-memory@2.0.1">memory</span><div class="track"><div class="fill" style="width: 57.3%"></div></div><span class="n"><span data-n="1045" data-f="int">1,045</span> <small>· 9</small></span></div>
+    <div class="bar"><span title="npx -y @modelcontextprotocol/server-sequential-thinking@2.0.0">thinking</span><div class="track"><div class="fill" style="width: 47.8%"></div></div><span class="n"><span data-n="873" data-f="int">873</span> <small>· 1</small></span></div>
+    <div class="bar"><span title="uvx mcp-server-time==2026.10.28">time</span><div class="track"><div class="fill" style="width: 15.4%"></div></div><span class="n"><span data-n="281" data-f="int">281</span> <small>· 2</small></span></div>
+    <div class="bar"><span title="uvx mcp-server-fetch==2026.10.28">fetch</span><div class="track"><div class="fill" style="width: 12.8%"></div></div><span class="n"><span data-n="234" data-f="int">234</span> <small>· 1</small></span></div>
   </div>
 </section>
 <section class="card">
@@ -175,7 +175,7 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
   <p class="muted" data-i18n="heaviestSub">The ten tool definitions that cost the most tokens.</p>
   <div class="table-wrap"><table>
     <thead><tr><th data-i18n="tool">Tool</th><th class="r" data-i18n="tokens">Tokens</th></tr></thead>
-    <tbody><tr><td class="mono">thinking/<wbr>sequentialthinking</td><td class="r num">873</td></tr><tr><td class="mono">everything/<wbr>gzip-file-as-resource</td><td class="r num">252</td></tr><tr><td class="mono">fetch/<wbr>fetch</td><td class="r num">234</td></tr><tr><td class="mono">filesystem/<wbr>read_text_file</td><td class="r num">196</td></tr><tr><td class="mono">memory/<wbr>create_entities</td><td class="r num">190</td></tr><tr><td class="mono">everything/<wbr>get-header-params</td><td class="r num">187</td></tr><tr><td class="mono">time/<wbr>convert_time</td><td class="r num">186</td></tr><tr><td class="mono">filesystem/<wbr>edit_file</td><td class="r num">173</td></tr><tr><td class="mono">filesystem/<wbr>search_files</td><td class="r num">159</td></tr><tr><td class="mono">filesystem/<wbr>read_multiple_files</td><td class="r num">150</td></tr></tbody>
+    <tbody><tr><td class="mono">thinking/<wbr>sequentialthinking</td><td class="r num"><span data-n="873" data-f="int">873</span></td></tr><tr><td class="mono">everything/<wbr>gzip-file-as-resource</td><td class="r num"><span data-n="252" data-f="int">252</span></td></tr><tr><td class="mono">fetch/<wbr>fetch</td><td class="r num"><span data-n="234" data-f="int">234</span></td></tr><tr><td class="mono">filesystem/<wbr>read_text_file</td><td class="r num"><span data-n="196" data-f="int">196</span></td></tr><tr><td class="mono">memory/<wbr>create_entities</td><td class="r num"><span data-n="190" data-f="int">190</span></td></tr><tr><td class="mono">everything/<wbr>get-header-params</td><td class="r num"><span data-n="187" data-f="int">187</span></td></tr><tr><td class="mono">time/<wbr>convert_time</td><td class="r num"><span data-n="186" data-f="int">186</span></td></tr><tr><td class="mono">filesystem/<wbr>edit_file</td><td class="r num"><span data-n="173" data-f="int">173</span></td></tr><tr><td class="mono">filesystem/<wbr>search_files</td><td class="r num"><span data-n="159" data-f="int">159</span></td></tr><tr><td class="mono">filesystem/<wbr>read_multiple_files</td><td class="r num"><span data-n="150" data-f="int">150</span></td></tr></tbody>
   </table></div>
 </section>
 </div>
@@ -193,31 +193,31 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
     <tbody>
       <tr>
         <td class="mono model"><small>mistral</small>ministral-8b-latest</td>
-        <td class="r num">86%</td>
-        <td class="r num">72%</td>
+        <td class="r num"><span data-n="0.8604651162790697" data-f="pct">86%</span></td>
+        <td class="r num"><span data-n="0.7209302325581395" data-f="pct">72%</span></td>
         <td>          <div class="dumb" aria-hidden="true"><div class="line" style="left: 72.1%; width: 13.900000000000006%"></div><div class="dot solo" style="left: 86.0%"></div><div class="dot stack" style="left: 72.1%"></div></div>
 </td>
-        <td class="r num down">-14</td>
+        <td class="r num down"><span data-n="-0.13953488372093026" data-f="pts">-14</span></td>
         <td class="r num">6</td>
-        <td class="r num">98%</td>
-        <td class="r num">100%</td>
-        <td class="r num">0%</td>
-        <td class="r num">7,558</td>
-        <td class="r num">$2.73</td>
+        <td class="r num"><span data-n="0.9767441860465116" data-f="pct">98%</span></td>
+        <td class="r num"><span data-n="1.0" data-f="pct">100%</span></td>
+        <td class="r num"><span data-n="0.0" data-f="pct">0%</span></td>
+        <td class="r num"><span data-n="7557.674418604651" data-f="int">7,558</span></td>
+        <td class="r num"><span data-n="2.7288" data-f="usd">$2.73</span></td>
       </tr>
       <tr>
         <td class="mono model"><small>mistral</small>ministral-14b-latest</td>
-        <td class="r num">91%</td>
-        <td class="r num">86%</td>
+        <td class="r num"><span data-n="0.9069767441860465" data-f="pct">91%</span></td>
+        <td class="r num"><span data-n="0.8604651162790697" data-f="pct">86%</span></td>
         <td>          <div class="dumb" aria-hidden="true"><div class="line" style="left: 86.0%; width: 4.700000000000003%"></div><div class="dot solo" style="left: 90.7%"></div><div class="dot stack" style="left: 86.0%"></div></div>
 </td>
-        <td class="r num down">-5</td>
+        <td class="r num down"><span data-n="-0.046511627906976716" data-f="pts">-5</span></td>
         <td class="r num">2</td>
-        <td class="r num">98%</td>
-        <td class="r num">100%</td>
-        <td class="r num">0%</td>
-        <td class="r num">7,558</td>
-        <td class="r num">$3.64</td>
+        <td class="r num"><span data-n="0.9767441860465116" data-f="pct">98%</span></td>
+        <td class="r num"><span data-n="1.0" data-f="pct">100%</span></td>
+        <td class="r num"><span data-n="0.0" data-f="pct">0%</span></td>
+        <td class="r num"><span data-n="7557.674418604651" data-f="int">7,558</span></td>
+        <td class="r num"><span data-n="3.6384" data-f="usd">$3.64</span></td>
       </tr>
     </tbody>
   </table></div>
@@ -256,8 +256,8 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
 </section>
 <section class="card">
   <h2 data-i18n="never">Tools no model chose (stacked)</h2>
-  <p class="muted"><span data-i18n="neverSub">Removing them would save about</span> <b class="mono">690</b> <span data-i18n="neverSub2">tokens per turn</span> (~2.1M <span data-i18n="perMonthShort">per month</span>). <span data-i18n="neverCaveat">Check before removing: a tool can be useful even if these requests did not reach it.</span></p>
-  <ul class="never"><li><span class="mono">filesystem/<wbr>edit_file</span><span class="num muted">173</span></li><li><span class="mono">memory/<wbr>create_relations</span><span class="num muted">145</span></li><li><span class="mono">filesystem/<wbr>list_directory_with_sizes</span><span class="num muted">140</span></li><li><span class="mono">memory/<wbr>delete_observations</span><span class="num muted">130</span></li><li><span class="mono">filesystem/<wbr>write_file</span><span class="num muted">102</span></li></ul>
+  <p class="muted"><span data-i18n="neverSub">Removing them would save about</span> <b class="mono"><span data-n="690" data-f="int">690</span></b> <span data-i18n="neverSub2">tokens per turn</span> (~<span data-n="2070000" data-f="big">2.1M</span> <span data-i18n="perMonthShort">per month</span>). <span data-i18n="neverCaveat">Check before removing: a tool can be useful even if these requests did not reach it.</span></p>
+  <ul class="never"><li><span class="mono">filesystem/<wbr>edit_file</span><span class="num muted"><span data-n="173" data-f="int">173</span></span></li><li><span class="mono">memory/<wbr>create_relations</span><span class="num muted"><span data-n="145" data-f="int">145</span></span></li><li><span class="mono">filesystem/<wbr>list_directory_with_sizes</span><span class="num muted"><span data-n="140" data-f="int">140</span></span></li><li><span class="mono">memory/<wbr>delete_observations</span><span class="num muted"><span data-n="130" data-f="int">130</span></span></li><li><span class="mono">filesystem/<wbr>write_file</span><span class="num muted"><span data-n="102" data-f="int">102</span></span></li></ul>
 </section>
 </div>
 
@@ -329,7 +329,7 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
 
 <footer>
   <span><a href="https://github.com/diegoperezg7/toolbloat">github.com/diegoperezg7/toolbloat</a> · MIT</span>
-  <span><span data-i18n="spend">API cost of these calls</span> $0.14 · <span data-i18n="generated">generated by toolbloat</span> 0.1.0</span>
+  <span><span data-i18n="spend">API cost of these calls</span> <span data-n="0.1446936" data-f="usd">$0.14</span> · <span data-i18n="generated">generated by toolbloat</span> 0.1.0</span>
 </footer>
 </div>
 <script>
@@ -371,6 +371,26 @@ footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; 
     document.documentElement.lang = l;
     nodes.forEach(function (n) { var k = n.getAttribute("data-i18n"); n.textContent = l === "es" && es[k] ? es[k] : en[k]; });
     btn.textContent = l === "es" ? "EN" : "ES";
+    formatNumbers(l);
+  }
+  function formatNumbers(l) {
+    var loc = l === "es" ? "es-ES" : "en-US";
+    var nf = function (o) { o.useGrouping = "always"; try { return new Intl.NumberFormat(loc, o); } catch (e) { o.useGrouping = true; return new Intl.NumberFormat(loc, o); } };
+    var f = {
+      int: nf({ maximumFractionDigits: 0 }),
+      pct: nf({ style: "percent", maximumFractionDigits: 0 }),
+      big: nf({ notation: "compact", maximumFractionDigits: 1 }),
+      usd: nf({ style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      usd4: nf({ style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 4 }),
+      pts: nf({ maximumFractionDigits: 0, signDisplay: "exceptZero" })
+    };
+    document.querySelectorAll("[data-f]").forEach(function (n) {
+      var v = parseFloat(n.getAttribute("data-n")), k = n.getAttribute("data-f");
+      if (isNaN(v)) return;
+      if (k === "pts") v = v * 100;
+      if (k === "usd" && v !== 0 && Math.abs(v) < 0.01) k = "usd4";
+      n.textContent = f[k].format(v);
+    });
   }
   btn.addEventListener("click", function () { setLang(lang === "es" ? "en" : "es"); store("toolbloat-lang", lang); });
   setLang(lang);

@@ -48,7 +48,7 @@ Las tools **nunca se ejecutan**: toolbloat solo lee la llamada que propone el mo
 Mira una ejecución real grabada, sin claves ni configuración (necesita [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.0 toolbloat demo --open
+uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.1 toolbloat demo --open
 ```
 
 o desde un clon:

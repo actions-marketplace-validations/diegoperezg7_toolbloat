@@ -70,3 +70,9 @@ def test_bundled_demo_has_no_secrets_or_private_paths():
     home_dirs = ["/" + "Users" + "/", "/home/", "/" + "private" + "/"]
     for bad in [*home_dirs, "API_KEY", "sk-"]:
         assert bad not in text
+
+
+def test_numbers_carry_raw_values_for_locale_formatting(tools, intents):
+    html = render(make_results(tools, intents))
+    assert 'data-n="150" data-f="int">150<' in html
+    assert "Intl.NumberFormat" in html and "es-ES" in html

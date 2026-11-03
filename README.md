@@ -46,7 +46,7 @@ Tools are **never executed**: toolbloat only reads the tool call the model propo
 See a recorded real run, no keys and no setup (needs [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.0 toolbloat demo --open
+uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.1 toolbloat demo --open
 ```
 
 or from a clone:

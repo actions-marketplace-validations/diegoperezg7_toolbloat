@@ -14,12 +14,20 @@ from .metrics import NONE, UNKNOWN, compute
 def _env() -> Environment:
     env = Environment(autoescape=select_autoescape(["html", "j2"]), trim_blocks=True, lstrip_blocks=True)
     env.filters["wbr"] = lambda x: Markup("/<wbr>").join(escape(p) for p in str(x).split("/"))
-    env.filters["pct"] = lambda x: "–" if x is None else f"{x * 100:.0f}%"
-    env.filters["num"] = lambda x: "–" if x is None else f"{x:,.0f}"
-    env.filters["big"] = _big
-    env.filters["usd"] = lambda x: f"${x:,.2f}" if x >= 0.01 or x == 0 else f"${x:,.4f}"
-    env.filters["pts"] = lambda x: "–" if x is None else f"{x * 100:+.0f}"
+    # Numbers are rendered in English and re-formatted for the active language in the browser
+    # (data-n holds the raw value, data-f the format), so ES shows 6.064 and EN 6,064.
+    env.filters["pct"] = lambda x: _n(x, "pct", None if x is None else f"{x * 100:.0f}%")
+    env.filters["num"] = lambda x: _n(x, "int", None if x is None else f"{x:,.0f}")
+    env.filters["big"] = lambda x: _n(x, "big", _big(x))
+    env.filters["usd"] = lambda x: _n(x, "usd", f"${x:,.2f}" if x >= 0.01 or x == 0 else f"${x:,.4f}")
+    env.filters["pts"] = lambda x: _n(x, "pts", None if x is None else f"{x * 100:+.0f}")
     return env
+
+
+def _n(value, fmt: str, text: str | None) -> Markup:
+    if value is None or text is None:
+        return Markup("–")
+    return Markup('<span data-n="{}" data-f="{}">{}</span>').format(value, fmt, text)
 
 
 def _big(n: float) -> str:

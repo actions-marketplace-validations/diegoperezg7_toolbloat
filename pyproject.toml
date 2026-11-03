@@ -1,6 +1,6 @@
 [project]
 name = "toolbloat"
-version = "0.1.0"
+version = "0.1.1"
 description = "See what your MCP servers cost in tokens on every turn, and whether stacking them makes your model pick the wrong tool."
 readme = "README.md"
 license = "MIT"
