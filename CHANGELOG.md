@@ -17,6 +17,8 @@ All notable changes to this project are documented here. The format follows
   token and cost projection. Tools are never executed.
 - `toolbloat report`: rebuild the HTML report from `results.json`.
 - `toolbloat demo`: a recorded real run on six MCP reference servers, no keys needed.
+- Before sending tool definitions to a cloud provider, lists the servers and the provider and asks
+  for confirmation (`--yes` to skip, required without a terminal).
 - Reads `.mcp.json`, Cursor and Claude Desktop configs (command and args only, `env` is never shown).
 - Providers: Ollama, Mistral, OpenRouter, OpenAI through one OpenAI-compatible client, with
   `--max-cost`, backoff on rate limits and a resumable call cache.

@@ -186,11 +186,13 @@ bigger window once (`num_ctx` 16384) and use it:
 printf 'FROM qwen3:4b\nPARAMETER num_ctx 16384\n' > Modelfile && ollama create qwen3:4b-16k -f Modelfile
 ```
 
-Tested with `ollama:qwen3:4b-16k` in a short real run (32 calls on the reference stack; the largest prompt was 5,193
+Tested with a partial run of `ollama:qwen3:4b-16k` (32 real calls on the reference stack; the largest prompt was 5,193
 tokens, well under the 16,384 window). It is not in the recorded demo: a local 4B model with thinking took several
 minutes per call on a shared 16 GB laptop.
 
 **Privacy.** With a cloud provider, your tool definitions and the test requests are sent to it.
+Before anything is sent, toolbloat lists the servers whose definitions will go out and the provider
+they go to, and asks for confirmation; without a terminal (CI) it refuses unless you pass `--yes`.
 With Ollama nothing leaves your machine. There is no telemetry. Running toolbloat starts the MCP
 servers in your config, which is third-party code you already run with your agent: see
 [SECURITY.md](SECURITY.md).

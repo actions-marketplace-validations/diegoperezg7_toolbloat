@@ -105,6 +105,30 @@ def _discover(configs, servers, timeout):
     return results
 
 
+def _confirm_cloud(specs, servers, yes: bool) -> None:
+    """Before anything leaves the machine, say which servers go to which provider and ask."""
+    cloud = sorted({s.provider for s in specs if s.provider != "ollama"})
+    if not cloud:
+        return
+    sent = [r for r in servers if not r.error and r.tools]
+    console.print(
+        f"[yellow]privacy:[/] the tool definitions (names, descriptions, JSON Schemas) of these"
+        f" {len(sent)} server(s) and the test requests will be sent to [bold]{', '.join(cloud)}[/]:"
+    )
+    for r in sent:
+        console.print(f"  - {r.name} ({len(r.tools)} tools): {r.command}")
+    console.print("[dim]  Nothing else leaves this machine: no env values, no files, and no tool is ever executed.[/]")
+    if yes:
+        return
+    if not sys.stdin.isatty():
+        raise ToolbloatError(
+            "Refusing to send tool definitions to a cloud provider without confirmation."
+            " Re-run with --yes to accept, or use a local model (ollama:...)."
+        )
+    if not typer.confirm("Send them?", default=False):
+        raise ToolbloatError("Cancelled: nothing was sent.")
+
+
 def _hardware() -> str:
     parts = [platform.system(), platform.machine()]
     if sys.platform == "darwin":
@@ -215,15 +239,6 @@ def run(
                     f"No price known for {s.id}, so --max-cost cannot protect you. Add"
                     f" --price {s.id}=IN,OUT (USD per million tokens)."
                 )
-        cloud = sorted({s.provider for s in specs if s.provider != "ollama"})
-        if cloud:
-            console.print(
-                f"[yellow]privacy:[/] tool definitions and test requests will be sent to {', '.join(cloud)}."
-                " Nothing else leaves this machine, and no tool is ever executed."
-            )
-            if not yes and sys.stdin.isatty() and not typer.confirm("Continue?", default=True):
-                raise typer.Exit(1)
-
         budget = Budget(max_cost=max_cost)
         llms = [LLM(s, budget) for s in specs]
         if not cached_only:
@@ -234,11 +249,9 @@ def run(
         if not tools:
             raise ToolbloatError("The servers started but exposed no tools.")
 
-        gen = None
-        if intent_model:
-            gen = LLM(ModelSpec.parse(intent_model), budget)
-        else:
-            gen = llms[0]
+        gen = LLM(ModelSpec.parse(intent_model), budget) if intent_model else llms[0]
+        if not cached_only:
+            _confirm_cloud([*specs, gen.spec], results_servers, yes)
         with console.status("Preparing intents...") as status:
             items = intents_mod.ensure(
                 intents,
@@ -306,6 +319,7 @@ def intents_cmd(
     intents_per_tool: Annotated[int, typer.Option(min=1, max=10)] = 1,
     max_cost: Annotated[float, typer.Option(help="Stop before spending more than this many USD.")] = 1.0,
     timeout: Annotated[float, typer.Option(help="Seconds to wait for each server.")] = 90,
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Do not ask before sending data to a cloud API.")] = False,
 ) -> None:
     """Write (or complete) the intents YAML without running the evaluation, so you can review it first."""
     from . import intents as intents_mod
@@ -314,7 +328,9 @@ def intents_cmd(
     try:
         budget = Budget(max_cost=max_cost)
         gen = LLM(ModelSpec.parse(model), budget)
-        tools = [t for r in _discover(config, server, timeout) for t in r.tools]
+        found = _discover(config, server, timeout)
+        tools = [t for r in found for t in r.tools]
+        _confirm_cloud([gen.spec], found, yes)
         with console.status("Writing intents...") as status:
             items = intents_mod.ensure(
                 intents,

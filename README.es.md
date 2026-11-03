@@ -189,12 +189,13 @@ variante con más ventana una vez (`num_ctx` 16384) y úsala:
 printf 'FROM qwen3:4b\nPARAMETER num_ctx 16384\n' > Modelfile && ollama create qwen3:4b-16k -f Modelfile
 ```
 
-Probado con `ollama:qwen3:4b-16k` en una ejecución real corta (32 llamadas sobre la pila de referencia; el prompt más
+Probado con una ejecución parcial de `ollama:qwen3:4b-16k` (32 llamadas reales sobre la pila de referencia; el prompt más
 largo fue de 5.193 tokens, muy por debajo de la ventana de 16.384). No está en la demo grabada: un modelo local de 4B
 con thinking tardaba varios minutos por llamada en un portátil de 16 GB compartido.
 
 **Privacidad.** Con un proveedor en la nube, las definiciones de tus tools y las peticiones de prueba
-se le envían. Con Ollama nada sale de tu máquina. No hay telemetría. Ejecutar toolbloat arranca los
+se le envían. Antes de enviar nada, toolbloat muestra qué servidores se van a mandar y a qué proveedor,
+y pide confirmación; sin terminal (CI) se niega salvo que pases `--yes`. Con Ollama nada sale de tu máquina. No hay telemetría. Ejecutar toolbloat arranca los
 servidores MCP de tu config, que es código de terceros que ya ejecutas con tu agente: mira
 [SECURITY.md](SECURITY.md).
 

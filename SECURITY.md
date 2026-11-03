@@ -19,7 +19,11 @@ finds (`./.mcp.json`, `./.cursor/mcp.json`, `~/.cursor/mcp.json`, the Claude Des
 ## What leaves your machine
 
 With a cloud provider (`mistral:`, `openrouter:`, `openai:`), the tool definitions of your servers
-and the test requests are sent to that provider. With `ollama:` nothing leaves your machine. There is
+and the test requests are sent to that provider. Before the first call, `toolbloat run` and
+`toolbloat intents` print every server whose definitions would be sent and the provider, and ask for
+confirmation (default: no). Without an interactive terminal they refuse unless `--yes` is passed.
+Note that with no `--config`/`--server` flags toolbloat discovers servers from your real agent configs,
+so check that list before confirming. With `ollama:` nothing leaves your machine. There is
 no telemetry. API keys are read only from environment variables.
 
 ## Reporting a vulnerability
