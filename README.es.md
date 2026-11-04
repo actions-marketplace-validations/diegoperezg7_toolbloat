@@ -219,6 +219,16 @@ Modelos de la grabación: `mistral:ministral-8b-latest` y `mistral:ministral-14b
 - Transportes HTTP y SSE.
 - Comparar una pila con y sin un compresor como mcp-compressor.
 
+## Parte de una serie
+
+Herramientas open source para medir agentes y LLMs con tus propios datos:
+
+- [memarena](https://github.com/diegoperezg7/memarena): Compara capas de memoria con tus propias conversaciones.
+- [parsearena](https://github.com/diegoperezg7/parsearena): Compara parsers de PDF lado a lado y su efecto en la recuperación.
+- [commitarena](https://github.com/diegoperezg7/commitarena): Reproduce fixes reales de tu historial de git con cualquier modelo.
+- [rulelab](https://github.com/diegoperezg7/rulelab): Descubre qué reglas de tu AGENTS.md se ganan sus tokens.
+- [doesitfire](https://github.com/diegoperezg7/doesitfire): Comprueba si tu SKILL.md se activa en Claude Code, Codex y OpenCode.
+
 ## Licencia
 
 [MIT](LICENSE) © 2026 Diego Pérez

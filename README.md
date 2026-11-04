@@ -217,6 +217,16 @@ Models in the recording: `mistral:ministral-8b-latest` and `mistral:ministral-14
 - HTTP and SSE transports.
 - Compare a stack with and without a compressor such as mcp-compressor.
 
+## Part of a series
+
+Open source tools that evaluate agents and LLMs on your own data:
+
+- [memarena](https://github.com/diegoperezg7/memarena): Benchmark memory layers on your own conversations.
+- [parsearena](https://github.com/diegoperezg7/parsearena): Compare PDF parsers side by side and their effect on retrieval.
+- [commitarena](https://github.com/diegoperezg7/commitarena): Replay real bug fixes from your git history against any model.
+- [rulelab](https://github.com/diegoperezg7/rulelab): Find which AGENTS.md rules earn their tokens.
+- [doesitfire](https://github.com/diegoperezg7/doesitfire): Test whether your SKILL.md activates in Claude Code, Codex and OpenCode.
+
 ## License
 
 [MIT](LICENSE) © 2026 Diego Pérez
