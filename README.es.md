@@ -48,7 +48,7 @@ Las tools **nunca se ejecutan**: toolbloat solo lee la llamada que propone el mo
 Mira una ejecución real grabada, sin claves ni configuración (necesita [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.2.0 toolbloat demo --open
+uvx toolbloat demo --open
 ```
 
 o desde un clon:
@@ -56,8 +56,6 @@ o desde un clon:
 ```bash
 git clone https://github.com/diegoperezg7/toolbloat && cd toolbloat && uv run toolbloat demo --open
 ```
-
-`uvx toolbloat` llegará pronto a PyPI.
 
 Después mide tu propia pila:
 

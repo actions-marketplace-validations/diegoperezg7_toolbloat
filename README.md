@@ -46,7 +46,7 @@ Tools are **never executed**: toolbloat only reads the tool call the model propo
 See a recorded real run, no keys and no setup (needs [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.2.0 toolbloat demo --open
+uvx toolbloat demo --open
 ```
 
 or from a clone:
@@ -54,8 +54,6 @@ or from a clone:
 ```bash
 git clone https://github.com/diegoperezg7/toolbloat && cd toolbloat && uv run toolbloat demo --open
 ```
-
-`uvx toolbloat` is coming to PyPI.
 
 Then measure your own stack:
 
