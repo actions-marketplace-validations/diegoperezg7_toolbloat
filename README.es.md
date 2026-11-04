@@ -48,7 +48,7 @@ Las tools **nunca se ejecutan**: toolbloat solo lee la llamada que propone el mo
 Mira una ejecución real grabada, sin claves ni configuración (necesita [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.1 toolbloat demo --open
+uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.2.0 toolbloat demo --open
 ```
 
 o desde un clon:
@@ -130,6 +130,38 @@ El informe completo de esta ejecución está en **<https://diegoperezg7.github.i
   <img alt="informe HTML de toolbloat, claro" src="docs/assets/report-light.png" width="49%">
   <img alt="informe HTML de toolbloat, oscuro" src="docs/assets/report-dark.png" width="49%">
 </p>
+
+## Úsalo en CI
+
+Una GitHub Action evita que el coste en tokens de tu pila MCP, o del servidor MCP que mantienes,
+crezca sin que nadie lo vea. Arranca los servidores stdio de tu configuración, cuenta sus
+definiciones de tools, escribe la tabla en el resumen del job y hace fallar el job si el total pasa
+de `max-tokens`. No llama a ningún modelo ni necesita claves.
+
+```yaml
+# .github/workflows/mcp-tokens.yml
+on: [pull_request]
+jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: diegoperezg7/toolbloat@v0.2.0
+        with:
+          config: .mcp.json        # lista de ficheros separados por espacios
+          max-tokens: "8000"       # vacío para solo informar
+```
+
+Con los seis servidores de referencia de la demo el resumen marca 6.064 tokens, así que un
+presupuesto de 5.000 falla por 1.064. La misma comprobación funciona en local:
+
+```bash
+toolbloat tokens --config .mcp.json --max-tokens 8000   # sale con 2 si se pasa, con 1 si no puede medir un servidor
+```
+
+La action ejecuta los comandos de servidor que hay en la configuración del repositorio que revisa.
+En PRs desde forks GitHub no da secretos al job, pero esos comandos se ejecutan igual: revisa los
+cambios de configuración como revisarías código.
 
 ## Cómo funciona
 

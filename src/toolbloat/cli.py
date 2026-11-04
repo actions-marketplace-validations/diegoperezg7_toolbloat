@@ -163,9 +163,23 @@ def tokens(
     turns_per_day: Annotated[int, typer.Option(help="Turns per day for the monthly projection.")] = 100,
     json_out: Annotated[bool, typer.Option("--json", help="Print JSON instead of tables.")] = False,
     timeout: Annotated[float, typer.Option(help="Seconds to wait for each server.")] = 90,
+    max_tokens: Annotated[
+        int | None,
+        typer.Option(
+            "--max-tokens",
+            min=1,
+            help="Token budget for all tool definitions. Exit with code 2 if the total is over it,"
+            " or 1 if a server could not be measured. For CI.",
+        ),
+    ] = None,
+    markdown: Annotated[
+        Path | None,
+        typer.Option("--markdown", help="Also append a Markdown summary to this file (e.g. $GITHUB_STEP_SUMMARY)."),
+    ] = None,
 ) -> None:
     """Count the tokens your MCP tool definitions add to every turn. No model calls."""
-    from .terminal import print_tokens
+    from .metrics import compute
+    from .terminal import markdown_tokens, print_tokens
 
     try:
         results = _discover(config, server, timeout)
@@ -178,10 +192,30 @@ def tokens(
         "models": [],
         "calls": [],
     }
+    total = compute(data)["total_tokens"]
+    failed = [r.name for r in results if r.error]
+    if markdown:
+        with markdown.open("a", encoding="utf-8") as f:
+            f.write(markdown_tokens(data, max_tokens))
     if json_out:
         console.print_json(json.dumps({"tokenizer": "o200k_base (approximate)", **data}))
+    else:
+        print_tokens(console, data)
+    if max_tokens is None:
         return
-    print_tokens(console, data)
+    if failed:
+        err.print(
+            f"[bold red]error:[/] could not measure {', '.join(failed)}, so the budget check cannot pass."
+            " Fix the server command or remove it from the config."
+        )
+        raise typer.Exit(1)
+    if total > max_tokens:
+        err.print(
+            f"[bold red]over budget:[/] tool definitions take {total:,} tokens, the budget is {max_tokens:,}"
+            f" (+{total - max_tokens:,})."
+        )
+        raise typer.Exit(2)
+    console.print(f"[green]within budget:[/] {total:,} of {max_tokens:,} tokens.")
 
 
 @app.command()

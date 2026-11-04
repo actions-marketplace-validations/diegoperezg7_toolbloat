@@ -1,0 +1,32 @@
+name: Action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Write a config with the test server
+        run: |
+          printf '{"mcpServers":{"tiny":{"command":"uv","args":["run","--project","%s","python","%s/tests/fixtures/tiny_server.py"]}}}' "$PWD" "$PWD" > /tmp/ci.mcp.json
+      - name: Within budget
+        uses: ./
+        with:
+          config: /tmp/ci.mcp.json
+          max-tokens: "100000"
+      - name: Over budget must fail
+        id: over
+        continue-on-error: true
+        uses: ./
+        with:
+          config: /tmp/ci.mcp.json
+          max-tokens: "1"
+      - name: Check the over-budget step failed
+        run: test "${{ steps.over.outcome }}" = "failure"

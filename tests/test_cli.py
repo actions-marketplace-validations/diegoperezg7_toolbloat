@@ -95,3 +95,22 @@ def test_confirmation_names_the_config_file(monkeypatch, tmp_path):
     )
     assert r.exit_code == 1
     assert "tiny (2 tools) from" in r.output and ".mcp.json" in r.output.replace("\n", "")
+
+
+def test_token_budget_and_markdown(tmp_path):
+    md = tmp_path / "summary.md"
+    ok = runner.invoke(
+        app, ["tokens", "-s", f"tiny={sys.executable} {TINY}", "--max-tokens", "100000", "--markdown", str(md)]
+    )
+    assert ok.exit_code == 0, ok.output
+    assert "within budget" in ok.output
+    text = md.read_text()
+    assert "| tiny |" in text and "within budget" in text
+    over = runner.invoke(app, ["tokens", "-s", f"tiny={sys.executable} {TINY}", "--max-tokens", "1"])
+    assert over.exit_code == 2
+    assert "over budget" in over.output
+
+
+def test_token_budget_fails_when_a_server_cannot_be_measured():
+    r = runner.invoke(app, ["tokens", "-s", "definitely-not-a-command-xyz", "--max-tokens", "100000"])
+    assert r.exit_code == 1

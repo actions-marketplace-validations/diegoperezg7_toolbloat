@@ -46,7 +46,7 @@ Tools are **never executed**: toolbloat only reads the tool call the model propo
 See a recorded real run, no keys and no setup (needs [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.1.1 toolbloat demo --open
+uvx --from git+https://github.com/diegoperezg7/toolbloat@v0.2.0 toolbloat demo --open
 ```
 
 or from a clone:
@@ -128,6 +128,38 @@ The full report for this run is at **<https://diegoperezg7.github.io/toolbloat/>
   <img alt="toolbloat HTML report, light" src="docs/assets/report-light.png" width="49%">
   <img alt="toolbloat HTML report, dark" src="docs/assets/report-dark.png" width="49%">
 </p>
+
+## Use it in CI
+
+A GitHub Action keeps the token cost of your MCP stack, or of the MCP server you maintain, from
+growing unnoticed. It starts the stdio servers in your config, counts their tool definitions, writes
+the table to the job summary and fails the job when the total goes over `max-tokens`. It never calls
+a model and needs no keys.
+
+```yaml
+# .github/workflows/mcp-tokens.yml
+on: [pull_request]
+jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: diegoperezg7/toolbloat@v0.2.0
+        with:
+          config: .mcp.json        # space-separated list of config files
+          max-tokens: "8000"       # leave empty to only report
+```
+
+On the six reference servers of the demo the summary reads 6,064 tokens, so a budget of 5,000
+fails by 1,064. The same check runs locally:
+
+```bash
+toolbloat tokens --config .mcp.json --max-tokens 8000   # exit 2 if over, 1 if a server cannot be measured
+```
+
+The action runs the server commands from the config in the repository it checks out. On pull
+requests from forks GitHub gives the job no secrets, but those commands still run: review config
+changes as you would review code.
 
 ## How it works
 

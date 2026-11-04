@@ -45,6 +45,31 @@ def print_tokens(console: Console, results: dict) -> None:
     )
 
 
+def markdown_tokens(results: dict, max_tokens: int | None = None) -> str:
+    """Markdown version of the tokens table, for CI job summaries and PR comments."""
+    m = compute(results)
+    total = m["total_tokens"]
+    lines = ["## toolbloat: MCP tool definition tokens", ""]
+    if max_tokens is not None:
+        verdict = "over budget" if total > max_tokens else "within budget"
+        lines += [f"**{fmt_int(total)}** of **{fmt_int(max_tokens)}** tokens: {verdict}.", ""]
+    lines += ["| server | tools | tokens | share |", "|---|---:|---:|---:|"]
+    for s in m["per_server"]:
+        lines.append(f"| {s['name']} | {s['tools']} | {fmt_int(s['tokens'])} | {pct(s['share'])} |")
+    lines.append(f"| **total** | **{m['n_tools']}** | **{fmt_int(total)}** | 100% |")
+    failed = [s["name"] for s in results["servers"] if s.get("error")]
+    if failed:
+        lines += ["", f"Could not measure: {', '.join(failed)}."]
+    lines += [
+        "",
+        f"Every turn re-sends ~{fmt_int(total)} tokens of tool definitions"
+        f" (~{fmt_big(m['monthly_tokens'])} tokens/month at {m['turns_per_day']} turns/day, before prompt caching)."
+        " Tokenizer: o200k_base, approximate.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def print_summary(console: Console, results: dict) -> None:
     m = compute(results)
     print_tokens(console, results)

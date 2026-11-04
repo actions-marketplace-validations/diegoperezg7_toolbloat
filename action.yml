@@ -1,0 +1,43 @@
+name: toolbloat MCP token budget
+description: Count the tokens your MCP tool definitions add to every model turn, and fail when they go over a budget. No model calls.
+author: Diego Pérez
+branding:
+  icon: layers
+  color: purple
+
+inputs:
+  config:
+    description: MCP config file(s) with stdio servers (.mcp.json, Cursor, Claude Desktop format). Space-separated.
+    required: false
+    default: .mcp.json
+  max-tokens:
+    description: Token budget for all tool definitions together. Leave empty to only report.
+    required: false
+    default: ""
+  turns-per-day:
+    description: Turns per day for the monthly projection in the summary.
+    required: false
+    default: "100"
+  timeout:
+    description: Seconds to wait for each server to start and list its tools.
+    required: false
+    default: "90"
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: false
+    - shell: bash
+      env:
+        TB_CONFIG: ${{ inputs.config }}
+        TB_MAX_TOKENS: ${{ inputs.max-tokens }}
+        TB_TURNS: ${{ inputs.turns-per-day }}
+        TB_TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        set -euo pipefail
+        args=(tokens --turns-per-day "$TB_TURNS" --timeout "$TB_TIMEOUT" --markdown "$GITHUB_STEP_SUMMARY")
+        for c in $TB_CONFIG; do args+=(--config "$c"); done
+        if [ -n "$TB_MAX_TOKENS" ]; then args+=(--max-tokens "$TB_MAX_TOKENS"); fi
+        uv run --quiet --frozen --no-dev --project "$GITHUB_ACTION_PATH" toolbloat "${args[@]}"

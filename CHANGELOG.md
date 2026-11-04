@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-04
+
+### Added
+- GitHub Action (`uses: diegoperezg7/toolbloat@v0.2.0`): counts the tokens of the MCP tool
+  definitions in a config, writes the table to the job summary and fails over `max-tokens`.
+  No model calls, no keys.
+- `toolbloat tokens --max-tokens N`: exit code 2 when the total is over the budget, 1 when a server
+  could not be measured.
+- `toolbloat tokens --markdown FILE`: append a Markdown summary (for `$GITHUB_STEP_SUMMARY`).
+
 ## [0.1.1] - 2026-11-03
 
 ### Changed
@@ -33,5 +43,6 @@ All notable changes to this project are documented here. The format follows
   `--max-cost`, backoff on rate limits and a resumable call cache.
 - Static HTML report in English and Spanish, light and dark, mobile friendly.
 
+[0.2.0]: https://github.com/diegoperezg7/toolbloat/releases/tag/v0.2.0
 [0.1.1]: https://github.com/diegoperezg7/toolbloat/releases/tag/v0.1.1
 [0.1.0]: https://github.com/diegoperezg7/toolbloat/releases/tag/v0.1.0
