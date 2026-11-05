@@ -12,7 +12,7 @@ jobs:
   budget:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Write a config with the test server
         run: |
           printf '{"mcpServers":{"tiny":{"command":"uv","args":["run","--project","%s","python","%s/tests/fixtures/tiny_server.py"]}}}' "$PWD" "$PWD" > /tmp/ci.mcp.json
